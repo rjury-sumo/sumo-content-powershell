@@ -284,25 +284,3 @@ function start-ContentExportJob {
     return  $result
 }
 
-
-
-##########################  example code #########################################
-if ($Parent -eq "Personal") {
-    $parent_folder = get-PersonalFolder
-} else {
-    write-host "exporting only implemented for personal folder. please come back later once this is built!"
-    exit
-}
-
-# locate content by parent folder and name
-$FolderNameToExport = "Search Audit Custom"
-$export_id =  ($parent_folder.children | Where-Object {$_.ItemType -eq "Folder" -and $_.name -eq $FolderNameToExport}).id
-$export_item_path = get-ContentPath -id $export_id
-$item_by_path = get-ContentByPath -path $export_item_path
-
-# only this version icludes children via folder api
-$child_item = get-Folder -id $export_id
-$export_item = start-ContentExportJob -id $export_id
-
-# beware default depth is too small for most nested content
-#(start-ContentExportJob -id $export_id ) |convertto-json -Depth 100
