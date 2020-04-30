@@ -13,7 +13,7 @@
     $export_id = ($parent_folder.children | where {$_.ItemType -eq "Folder" -and $_.name -eq $FolderNameToExport}).id
     $export_item_path = get-ContentPath -id $export_id
     $item_by_path = get-ContentByPath -path $export_item_path
-    $export_item = run-ContentExportJob -id $export_id
+    $export_item = start-ContentExportJob -id $export_id
     $export_item | Convertto-Json -Depth 100
 #>
 
@@ -251,12 +251,12 @@ function get-ContentExportJobResult {
     number of polling attempts before giving up.
 
     .EXAMPLE
-    (run-ContentExportJob -id $export_id ) | ConvertTo-Json -Depth 100
+    (start-ContentExportJob -id $export_id ) | ConvertTo-Json -Depth 100
 
     .OUTPUTS
     PSCustomObject. Content of the export job. 
 #>
-function run-ContentExportJob {
+function start-ContentExportJob {
     Param(
         [parameter(Mandatory=$true)][string] $id ,
         [parameter(Mandatory=$false)][string] $poll_secs=1,
@@ -302,7 +302,7 @@ $item_by_path = get-ContentByPath -path $export_item_path
 
 # only this version icludes children via folder api
 $child_item = get-Folder -id $export_id
-$export_item = run-ContentExportJob -id $export_id
+$export_item = start-ContentExportJob -id $export_id
 
 # beware default depth is too small for most nested content
-#(run-ContentExportJob -id $export_id ) |convertto-json -Depth 100
+#(start-ContentExportJob -id $export_id ) |convertto-json -Depth 100
