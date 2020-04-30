@@ -129,4 +129,7 @@ $item_by_path = get-ContentByPath -path $export_item_path
 
 # only this version icludes children via folder api
 $child_item = get-Folder -id $export_id
-$export_item = run-ContentExportJob -id '0000000000AB8526'
+$export_item = run-ContentExportJob -id $export_id
+
+# beware default depth is too small for most nested content
+#(run-ContentExportJob -id $export_id ) |convertto-json -Depth 100
