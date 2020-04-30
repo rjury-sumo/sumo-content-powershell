@@ -21,8 +21,26 @@ $Credential = New-Object System.Management.Automation.PSCredential $accessid, ($
 if ($IsAdminMode) { $mode = $True}  else { $mode = $False}
 
 <#
-    .Description
+    .DESCRIPTION
     Wrapper to make calls to Sumo Logic API
+        
+    .SYNOPSIS
+        
+    .EXAMPLE
+        invoke-sumo [-path] <String> [[-method] <String>] [[-sumo_endpoint] <String>] [[-params] <Hashtable>] [<CommonParameters>]
+        
+    .PARAMETER path
+    Path to be appended to 'https://endpoint/api/v2'
+
+    .PARAMETER sumo_endpoint
+    API endpoint such as https://api.us2.sumologic.com
+
+    .PARAMETER method
+    HTTP method default GET
+
+    .PARAMETER params
+    hashtable of POST params (optional)
+
 #>
 function invoke-sumo {
     param(
@@ -44,7 +62,7 @@ function invoke-sumo {
 }
 
 <#
-    .Description
+    .DESCRIPTION
     get personal folder as an object.
 #>
 
@@ -54,8 +72,12 @@ function get-PersonalFolder {
 
 
 <#
-    .Description
+    .DESCRIPTION
     get /v2/content/folders/{id}
+
+    .PARAMETER id
+    content id
+
 #>
 
 function get-Folder {
@@ -66,8 +88,12 @@ function get-Folder {
 }
 
 <#
-    .Description
+    .DESCRIPTION
     get content item using path
+
+    .PARAMETER path
+    content path
+
 #>
 function get-ContentByPath {
     Param(
@@ -77,8 +103,11 @@ function get-ContentByPath {
 }
 
 <#
-    .Description
+    .DESCRIPTION
     get path of an item using id
+
+    .PARAMETER id
+    content id
 #>
 function get-ContentPath {
     Param(
@@ -88,8 +117,11 @@ function get-ContentPath {
 }
 
 <#
-    .Description
+    .DESCRIPTION
     Start a content export job using content id
+
+    .PARAMETER id
+    content id
 #>
 function start-ContentExportJob {
     Param(
@@ -99,9 +131,15 @@ function start-ContentExportJob {
 }
 
 <#
-    .Description
+    .DESCRIPTION
     Get status of a content export job
-#>
+
+    .PARAMETER id
+    content id
+
+    .PARAMETER job
+    export job id
+    #>
 function get-ContentExportJobStatus {
     Param(
         [parameter(Mandatory=$true)][string] $job,
@@ -112,8 +150,14 @@ function get-ContentExportJobStatus {
 }
 
 <#
-    .Description
+    .DESCRIPTION
     Get generated output of a completed export job.
+
+    .PARAMETER id
+    content id
+
+    .PARAMETER job
+    export job id
 #>
 function get-ContentExportJobResult {
     Param(
@@ -125,14 +169,23 @@ function get-ContentExportJobResult {
 }
 
 <#
-    .Description
+    .DESCRIPTION
     Start a content export job, poll for completion and return the completed export object.
+
+    .PARAMETER id
+    content id
+
+    .PARAMETER poll_secs
+    sleep time for status poll
+    
+    .PARAMETER max_tries
+    number of polling attempts before giving up.
 #>
 function run-ContentExportJob {
     Param(
         [parameter(Mandatory=$true)][string] $id ,
         [parameter(Mandatory=$false)][string] $poll_secs=1,
-        [parameter(Mandatory=$false)][string] $max_tries=10
+        [parameter(Mandatory=$false)][string] $max_tries=15
 )
     $job = start-ContentExportJob -id $id
     $tries = 0
