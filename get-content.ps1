@@ -6,6 +6,15 @@
  
     .DESCRIPTION
         Powershell wrapper to get, export or import content from Sumo Logic Library.
+
+    .EXAMPLE
+    $parent_folder = get-PersonalFolder
+    $FolderNameToExport = "MyFolder"
+    $export_id = ($parent_folder.children | where {$_.ItemType -eq "Folder" -and $_.name -eq $FolderNameToExport}).id
+    $export_item_path = get-ContentPath -id $export_id
+    $item_by_path = get-ContentByPath -path $export_item_path
+    $export_item = run-ContentExportJob -id $export_id
+    $export_item | Convertto-Json -Depth 100
 #>
 
 Param(
@@ -25,10 +34,17 @@ if ($IsAdminMode) { $mode = $True}  else { $mode = $False}
     Wrapper to make calls to Sumo Logic API
         
     .SYNOPSIS
+    Simplifies making calls to the sumologic content api.
         
     .EXAMPLE
-        invoke-sumo [-path] <String> [[-method] <String>] [[-sumo_endpoint] <String>] [[-params] <Hashtable>] [<CommonParameters>]
-        
+    invoke-sumo [-path] <String> [[-method] <String>] [[-sumo_endpoint] <String>] [[-params] <Hashtable>] [<CommonParameters>]
+ 
+    .EXAMPLE
+    invoke-sumo -path "content/folders/personal"
+
+    .EXAMPLE
+    invoke-sumo -path "content/path" -params @{ 'path' = $path;}
+
     .PARAMETER path
     Path to be appended to 'https://endpoint/api/v2'
 
@@ -41,6 +57,8 @@ if ($IsAdminMode) { $mode = $True}  else { $mode = $False}
     .PARAMETER params
     hashtable of POST params (optional)
 
+    .EXAMPLE
+    invoke-sumo -path "content/folders/personal"
 #>
 function invoke-sumo {
     param(
@@ -61,11 +79,22 @@ function invoke-sumo {
     return $r
 }
 
+
 <#
     .DESCRIPTION
     get personal folder as an object.
-#>
 
+    .EXAMPLE
+    get-PersonalFolder
+
+    .EXAMPLE
+    $parent_folder = get-PersonalFolder
+    $FolderNameToExport = "MyFolder"
+    $export_id = ($parent_folder.children | where {$_.ItemType -eq "Folder" -and $_.name -eq $FolderNameToExport}).id
+
+    .OUTPUTS
+    PSCustomObject. returns personal folder object
+#>
 function get-PersonalFolder {
     return invoke-sumo -path "content/folders/personal"
 }
@@ -78,8 +107,12 @@ function get-PersonalFolder {
     .PARAMETER id
     content id
 
-#>
+    .EXAMPLE
+    get-Folder -id '0000000000123526'
 
+    .OUTPUTS
+    PSCustomObject. returns personal folder object
+#>
 function get-Folder {
     Param(
         [parameter(Mandatory=$true)][string] $id 
@@ -87,13 +120,21 @@ function get-Folder {
     return invoke-sumo -path "content/folders/$id"
 }
 
+
 <#
     .DESCRIPTION
-    get content item using path
+    get content item using path.
+    NOTE: getting a folder by path does NOT return the chidren property.
+    If you want to recurse folders use get by 'get-Folder -id $id' instead!
 
     .PARAMETER path
     content path
 
+    .EXAMPLE
+    get-ContentByPath -path '/Library/Users/user@acme.com/folder/item' 
+
+    .OUTPUTS
+    PSCustomObject. returns content object
 #>
 function get-ContentByPath {
     Param(
@@ -102,12 +143,19 @@ function get-ContentByPath {
     return invoke-sumo -path "content/path" -params @{ 'path' = $path;}
 }
 
+
 <#
     .DESCRIPTION
     get path of an item using id
 
     .PARAMETER id
     content id
+
+    .EXAMPLE
+    get-ContentPath -id '0000000000123526'
+
+    .OUTPUTS
+    System.String. returns string path for object such as: /Library/Users/user@acme.com/folder/item
 #>
 function get-ContentPath {
     Param(
@@ -116,12 +164,16 @@ function get-ContentPath {
     return (invoke-sumo -path "content/$id/path").path
 }
 
+
 <#
     .DESCRIPTION
     Start a content export job using content id
 
     .PARAMETER id
     content id
+
+    .OUTPUTS
+    Hashtable. keys: contentid; jobId
 #>
 function start-ContentExportJob {
     Param(
@@ -129,6 +181,7 @@ function start-ContentExportJob {
 )
     return @{'contentId' = $id; 'jobId' = (invoke-sumo -path "content/$id/export/" -method 'POST').id }
 }
+
 
 <#
     .DESCRIPTION
@@ -139,6 +192,13 @@ function start-ContentExportJob {
 
     .PARAMETER job
     export job id
+
+    .EXAMPLE
+    get-contentExportJobStatus -job '4EA1C8F29371B157'-id '0000000000AB8526'
+
+    .OUTPUTS
+    PSCustomObject. Job status, including 'status' field
+
     #>
 function get-ContentExportJobStatus {
     Param(
@@ -149,15 +209,23 @@ function get-ContentExportJobStatus {
     return invoke-sumo -path "content/$id/export/$job/status" -method 'GET'
 }
 
+
 <#
     .DESCRIPTION
     Get generated output of a completed export job.
+    Use with ConvertTo-Json -Depth 100 to export as importable JSON.
 
     .PARAMETER id
     content id
 
     .PARAMETER job
     export job id
+
+    .EXAMPLE
+    get-ContentExportJobResult -job '4EA1C8F29371B157'-id '0000000000AB8526' | Convertto-JSON Depth 100
+
+    .OUTPUTS
+    PSCustomObject. Content of the export job. 
 #>
 function get-ContentExportJobResult {
     Param(
@@ -167,6 +235,7 @@ function get-ContentExportJobResult {
 )
     return invoke-sumo -path "content/$id/export/$job/result" -method 'GET'
 }
+
 
 <#
     .DESCRIPTION
@@ -180,6 +249,12 @@ function get-ContentExportJobResult {
     
     .PARAMETER max_tries
     number of polling attempts before giving up.
+
+    .EXAMPLE
+    (run-ContentExportJob -id $export_id ) | ConvertTo-Json -Depth 100
+
+    .OUTPUTS
+    PSCustomObject. Content of the export job. 
 #>
 function run-ContentExportJob {
     Param(
