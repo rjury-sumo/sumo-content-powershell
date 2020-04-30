@@ -296,7 +296,7 @@ if ($Parent -eq "Personal") {
 
 # locate content by parent folder and name
 $FolderNameToExport = "Search Audit Custom"
-$export_id =  ($parent_folder.children | where {$_.ItemType -eq "Folder" -and $_.name -eq $FolderNameToExport}).id
+$export_id =  ($parent_folder.children | Where-Object {$_.ItemType -eq "Folder" -and $_.name -eq $FolderNameToExport}).id
 $export_item_path = get-ContentPath -id $export_id
 $item_by_path = get-ContentByPath -path $export_item_path
 
