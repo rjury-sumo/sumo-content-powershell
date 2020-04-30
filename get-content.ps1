@@ -1,4 +1,13 @@
 # powershell functions to export content, and put into terraform format (useful for prototyping content or migration)
+
+<#
+    .SYNOPSIS
+        Powershell functions to export content from sumologic content and folder apis. https://api.sumologic.com/docs/#tag/contentManagement
+ 
+    .DESCRIPTION
+        Powershell wrapper to get, export or import content from Sumo Logic Library.
+#>
+
 Param(
         [parameter(Mandatory=$false)][string] $Parent = "Personal",
         [parameter(Mandatory=$false)][string] $endpoint="https://api.us2.sumologic.com",
@@ -11,6 +20,10 @@ $Credential = New-Object System.Management.Automation.PSCredential $accessid, ($
 
 if ($IsAdminMode) { $mode = $True}  else { $mode = $False}
 
+<#
+    .Description
+    Wrapper to make calls to Sumo Logic API
+#>
 function invoke-sumo {
     param(
         [parameter(Mandatory)][string] $path,
@@ -30,13 +43,21 @@ function invoke-sumo {
     return $r
 }
 
-# get personal folder as an object
-# most useful bits would be id and children array.
+<#
+    .Description
+    get personal folder as an object.
+#>
+
 function get-PersonalFolder {
     return invoke-sumo -path "content/folders/personal"
 }
 
-# get /v2/content/folders/{id}
+
+<#
+    .Description
+    get /v2/content/folders/{id}
+#>
+
 function get-Folder {
     Param(
         [parameter(Mandatory=$true)][string] $id 
@@ -44,6 +65,10 @@ function get-Folder {
     return invoke-sumo -path "content/folders/$id"
 }
 
+<#
+    .Description
+    get content item using path
+#>
 function get-ContentByPath {
     Param(
         [parameter(Mandatory=$true)][string] $path 
@@ -51,7 +76,10 @@ function get-ContentByPath {
     return invoke-sumo -path "content/path" -params @{ 'path' = $path;}
 }
 
-# Get path of an item.
+<#
+    .Description
+    get path of an item using id
+#>
 function get-ContentPath {
     Param(
         [parameter(Mandatory=$true)][string] $id 
@@ -59,6 +87,10 @@ function get-ContentPath {
     return (invoke-sumo -path "content/$id/path").path
 }
 
+<#
+    .Description
+    Start a content export job using content id
+#>
 function start-ContentExportJob {
     Param(
         [parameter(Mandatory=$true)][string] $id 
@@ -66,7 +98,10 @@ function start-ContentExportJob {
     return @{'contentId' = $id; 'jobId' = (invoke-sumo -path "content/$id/export/" -method 'POST').id }
 }
 
-
+<#
+    .Description
+    Get status of a content export job
+#>
 function get-ContentExportJobStatus {
     Param(
         [parameter(Mandatory=$true)][string] $job,
@@ -76,6 +111,10 @@ function get-ContentExportJobStatus {
     return invoke-sumo -path "content/$id/export/$job/status" -method 'GET'
 }
 
+<#
+    .Description
+    Get generated output of a completed export job.
+#>
 function get-ContentExportJobResult {
     Param(
         [parameter(Mandatory=$true)][string] $job,
@@ -85,6 +124,10 @@ function get-ContentExportJobResult {
     return invoke-sumo -path "content/$id/export/$job/result" -method 'GET'
 }
 
+<#
+    .Description
+    Start a content export job, poll for completion and return the completed export object.
+#>
 function run-ContentExportJob {
     Param(
         [parameter(Mandatory=$true)][string] $id ,
@@ -114,6 +157,8 @@ function run-ContentExportJob {
 }
 
 
+
+##########################  example code #########################################
 if ($Parent -eq "Personal") {
     $parent_folder = get-PersonalFolder
 } else {
