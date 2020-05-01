@@ -103,6 +103,15 @@ function new-ContentSession() {
     }
 }
 
+
+function getQueryString([hashtable]$form) {
+    $sections = $form.GetEnumerator() | Sort-Object -Property Name | ForEach-Object {
+      "{0}={1}" -f ([System.Web.HttpUtility]::UrlEncode($_.Name)), ([System.Web.HttpUtility]::UrlEncode($_.Value))
+    }
+    $sections -join "&"
+  }
+
+
 <#
     .DESCRIPTION
     Wrapper to make calls to Sumo Logic API
@@ -120,7 +129,10 @@ function new-ContentSession() {
     HTTP method default GET
     
     .PARAMETER params
-    hashtable of POST params (optional)
+    hashtable query params (optional)
+    
+    .PARAMETER body
+    body - encode as json string first.
 
     .EXAMPLE
     invoke-sumo -path "content/folders/personal"
@@ -137,19 +149,28 @@ function invoke-sumo {
         [parameter()][SumoAPISession]$session,
         [parameter(Mandatory)][string] $path,
         [parameter()][string] $method = 'GET',
-        [parameter()][Hashtable] $params
+        [parameter()][Hashtable] $params,
+        [parameter()][string] $body
     )
 
-    # we can run via a session or without using a session object.
     if ($session -and $session.endpoint) { 
+        $headers = @{
+            "content-type" = "application/json";
+            "accept"       = "application/json";
+            "isAdminMode" = $session.isAdminMode
+          }
+
         $uri = (@($session.endpoint,'api/v2',$path) -join "/") -replace '//v2','/v2'
         write-verbose "session: $($session.name) invoke_sumo $uri $method"
-        if (($params ) -or ( $session.isAdminMode -eq $true)) {
-            $params['isAdminMode'] = $session.isAdminMode.toString().tolower()
-            $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession  -Body $params).Content | convertfrom-json
+        if ($params) {
+            $qStr = getQueryString($params)
+            $uri += "?" + $qStr
+        }
+        if ($body) {
+            $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers -Body $body).Content | convertfrom-json
     
         } else {
-            $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession  ).Content | convertfrom-json
+            $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers  ).Content | convertfrom-json
         }
     } else {
         Write-Error "you must supply a valid session object to invoke-sumo"
