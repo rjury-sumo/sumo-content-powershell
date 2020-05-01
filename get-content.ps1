@@ -434,6 +434,9 @@ function start-ContentExportJob {
     .PARAMETER sumo_session
     Specify a session, defaults to $sumo_session
 
+    .EXAMPLE
+    gestartt-contentCopyJob -id '0000000000AB8526'
+
     .OUTPUTS
     Hashtable. keys: contentid; jobId, destinationFolder
 #>
@@ -464,7 +467,7 @@ function start-ContentCopyJob {
     Specify a session, defaults to $sumo_session
 
     .EXAMPLE
-    get-contentCopyJobStatus -job '4EA1C8F29371B157'-id '0000000000AB8526'
+    get-contentCopyJobStatus -job '4EA1C8F29371B157' -id '0000000000AB8526'
 
     .OUTPUTS
     PSCustomObject. Job status, including 'status' field
