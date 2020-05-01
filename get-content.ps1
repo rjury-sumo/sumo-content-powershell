@@ -121,18 +121,9 @@ function new-ContentSession() {
     
     .PARAMETER params
     hashtable of POST params (optional)
-    
-    .PARAMETER sumo_endpoint
-    alternative to using a sesssion: API endpoint such as https://api.us2.sumologic.com
-    
-    .PARAMETER Credential
-    alternative to using a sesssion.
 
     .EXAMPLE
     invoke-sumo -path "content/folders/personal"
-        
-    .EXAMPLE
-    invoke-sumo [[-session] <SumoAPISession>] [[-sumo_endpoint] <String>] [[-Credential] <PSCredential>] [-path] <String> [[-method] <String>] [[-params] <Hashtable>] [[-IsAdminMode] <Boolean>] [<CommonParameters>]
 
     .EXAMPLE
     invoke-sumo -path "content/folders/personal"  -session $s1
@@ -144,16 +135,13 @@ function new-ContentSession() {
 function invoke-sumo {
     param(
         [parameter()][SumoAPISession]$session,
-        [parameter()][string] $sumo_endpoint=$env:SUMOLOGIC_API_ENDPOINT,
-        [parameter()][pscredential] $Credential,
         [parameter(Mandatory)][string] $path,
         [parameter()][string] $method = 'GET',
-        [parameter()][Hashtable] $params,
-        [parameter()][bool] $IsAdminMode 
+        [parameter()][Hashtable] $params
     )
 
     # we can run via a session or without using a session object.
-    if ($session) { 
+    if ($session -and $session.endpoint) { 
         $uri = (@($session.endpoint,'api/v2',$path) -join "/") -replace '//v2','/v2'
         write-verbose "session: $($session.name) invoke_sumo $uri $method"
         if (($params ) -or ( $session.isAdminMode -eq $true)) {
@@ -164,18 +152,7 @@ function invoke-sumo {
             $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession  ).Content | convertfrom-json
         }
     } else {
-        if ($sumo_endpoint) { } else { $sumo_endpoint = "https://api.us2.sumologic.com"}
-        if ($Credential) {} else { Write-Error "If not using session you must supply -Credential object to invoke-sumo"}
-        if ($isAdminMode  -ne $true) { $IsAdminMode = $false}
-        $uri = (@($sumo_endpoint,'api/v2',$path) -join "/") -replace '//v2','/v2'
-        write-verbose "invoke_sumo $uri $method"
-        if (($params ) -or ( $IsAdminMode -eq $true)) {
-            $params['isAdminMode'] = $IsAdminMode.toString().tolower()
-            $r = (Invoke-WebRequest -Uri "content/folders/personal" -method $method -Credential $Credential -Body $params).Content | convertfrom-json
-    
-        } else {
-            $r = (Invoke-WebRequest -Uri $uri -method $method -Credential $Credential).Content | convertfrom-json
-        }
+        Write-Error "you must supply a valid session object to invoke-sumo"
     }
   return $r
 }
