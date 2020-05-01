@@ -386,12 +386,12 @@ function get-ContentExportJobResult {
     Specify a session, defaults to $sumo_session
 
     .EXAMPLE
-    (start-ContentExportJob -id $export_id ) | ConvertTo-Json -Depth 100
+    (start-ContentExport -id $export_id ) | ConvertTo-Json -Depth 100
 
     .OUTPUTS
     PSCustomObject. Content of the export job. 
 #>
-function start-ContentExportJob {
+function start-ContentExport {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter(Mandatory=$true)][string] $id ,
