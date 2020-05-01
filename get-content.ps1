@@ -29,14 +29,16 @@
 Add-Type -TypeDefinition @"
 public class SumoAPISession
 {
-    public SumoAPISession(string Endpoint, object WebSession, string Name) {
+    public SumoAPISession(string Endpoint, object WebSession, string Name, string isAdminMode) {
         this.Endpoint = Endpoint;
         this.WebSession = WebSession;
         this.Name = Name;
+        this.isAdminMode = isAdminMode;
     }
     public string Endpoint;
     public object WebSession;
     public string Name;
+    public string isAdminMode;
 }
 "@
 
@@ -69,14 +71,15 @@ public class SumoAPISession
     $instance2 = new-ContentSession -endpoint https://api.au.sumologic.com -accessid 'aaaa' -accesskey 'bbbb' -name 'InstanceB'
 
     .OUTPUTS
-    SumoAPISession. Contains endpoint, Name and WebSession properties
+    SumoAPISession. Contains endpoint, Name, isAdminMode and WebSession properties
 #>
 function new-ContentSession() {
     Param(
         [parameter(Mandatory=$false)][string] $endpoint=$env:SUMOLOGIC_API_ENDPOINT,
         [parameter(Mandatory=$false)][string] $accessid=$env:SUMO_ACCESS_ID,
         [parameter(Mandatory=$false)][string] $accesskey=$env:SUMO_ACCESS_KEY,
-        [parameter(Mandatory=$false)][string] $name=$accessid
+        [parameter(Mandatory=$false)][string] $name=$accessid,
+        [parameter()][bool] $isAdminMode = $false
 
     )
     $Credential = New-Object System.Management.Automation.PSCredential $accessid, ($accesskey | ConvertTo-SecureString -AsPlainText -Force )
@@ -93,7 +96,7 @@ function new-ContentSession() {
         $res = Invoke-WebRequest -Uri $uri -method Get -Credential $Credential -SessionVariable webSession
         if ($res) {
             # export the default session object to shell
-            $Script:sumo_session = [SumoAPISession]::new($endpoint, $webSession,$name)
+            $Script:sumo_session = [SumoAPISession]::new($endpoint, $webSession,$name,$isAdminMode)
           return $sumo_session
         } else { Write-Error "session failed." ; 
         #exit 1
@@ -146,16 +149,16 @@ function invoke-sumo {
         [parameter(Mandatory)][string] $path,
         [parameter()][string] $method = 'GET',
         [parameter()][Hashtable] $params,
-        [parameter()][bool] $IsAdminMode = $false
+        [parameter()][bool] $IsAdminMode 
     )
 
     # we can run via a session or without using a session object.
     if ($session) { 
         $uri = (@($session.endpoint,'api/v2',$path) -join "/") -replace '//v2','/v2'
         write-verbose "session: $($session.name) invoke_sumo $uri $method"
-        if (($params ) -or ( $IsAdminMode )) {
-            $params['isAdminMode'] = $mode.toString().tolower()
-            $r = (Invoke-WebRequest -Uri "content/folders/personal" -method $method -WebSession $session.WebSession  -Body $params).Content | convertfrom-json
+        if (($params ) -or ( $session.isAdminMode -eq $true)) {
+            $params['isAdminMode'] = $session.isAdminMode.toString().tolower()
+            $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession  -Body $params).Content | convertfrom-json
     
         } else {
             $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession  ).Content | convertfrom-json
@@ -163,10 +166,11 @@ function invoke-sumo {
     } else {
         if ($sumo_endpoint) { } else { $sumo_endpoint = "https://api.us2.sumologic.com"}
         if ($Credential) {} else { Write-Error "If not using session you must supply -Credential object to invoke-sumo"}
+        if ($isAdminMode  -ne $true) { $IsAdminMode = $false}
         $uri = (@($sumo_endpoint,'api/v2',$path) -join "/") -replace '//v2','/v2'
         write-verbose "invoke_sumo $uri $method"
-        if (($params ) -or ( $mode )) {
-            $params['isAdminMode'] = $mode.toString().tolower()
+        if (($params ) -or ( $IsAdminMode -eq $true)) {
+            $params['isAdminMode'] = $IsAdminMode.toString().tolower()
             $r = (Invoke-WebRequest -Uri "content/folders/personal" -method $method -Credential $Credential -Body $params).Content | convertfrom-json
     
         } else {
@@ -416,3 +420,62 @@ function start-ContentExportJob {
     return  $result
 }
 
+
+<#
+    .DESCRIPTION
+    Start a content copy job 
+
+    .PARAMETER id
+    content id
+
+    .PARAMETER destinationFolder
+    destinationFolder id
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    Hashtable. keys: contentid; jobId, destinationFolder
+#>
+function start-ContentCopyJob {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter(Mandatory=$true)][string] $id ,
+        [parameter(Mandatory=$true)][string] $destinationFolder 
+)
+    return @{'contentId' = $id; 
+    'jobId' = (invoke-sumo -path "content/$id/copy" -method 'POST' -session $sumo_session  -params @{ 'destinationFolder' = $destinationFolder;}).id ; 
+    'destinationFolder' = $destinationFolder;
+    } 
+}
+
+
+<#
+    .DESCRIPTION
+    Get status of a content copy job
+
+    .PARAMETER id
+    content id
+
+    .PARAMETER job
+    copy job id
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .EXAMPLE
+    get-contentCopyJobStatus -job '4EA1C8F29371B157'-id '0000000000AB8526'
+
+    .OUTPUTS
+    PSCustomObject. Job status, including 'status' field
+
+    #>
+function get-ContentCopyJobStatus {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter(Mandatory=$true)][string] $job,
+        [parameter(Mandatory=$true)][string] $id
+
+)
+    return invoke-sumo -path "content/$id/copy/$job/status" -method 'GET' -session $sumo_session
+}
