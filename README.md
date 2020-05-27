@@ -1,10 +1,21 @@
 # sumo-content-powershell
 powershell commands for interacting with content and folder apis
 
+# setup
+right now this is not a true module. 
+
+To use is 'dot source' it in a powershell session to create the functions and type e.g:
+```
+. ./sumo-content-apis.ps1
+```
+
+note because we define a custom type you can only dot source the module ONE TIME in a powershell session. It's a well known issue on the interwebs.
+
 # Examples of usage
 
 ## make a new session
 Make a new session using defuatl env vars for endpoint and credentials.
+The session is saved as a global variable which subsequent commands will default to sumo_session=$sumo_session
 Get a content item by id or path.
 
 ```
