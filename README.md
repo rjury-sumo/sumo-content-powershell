@@ -70,3 +70,10 @@ $to_folder=(get-PersonalFolder -sumo_session $live).children | where {$_.name -m
 get-ExportContent -id $from_folder.id -sumo_session $dev |  ConvertTo-Json -Depth 100 | Out-File -FilePath ./data/export.json
 start-ContentImportJob -folderId $to_folder.id -contentJSON (gc -Path ./data/export.json -Raw) -overwrite 'true' -sumo_session $live
 ```
+
+# TODO
+- make it a real module not dot source
+- include the delete endpoint for content
+- add the folder api endpoints like create / delete
+- add the move content endpoint
+- implement the isadminmode (it doesn't work yet!)
