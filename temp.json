@@ -1,0 +1,22 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "test3",
+  "description": "",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "test-search-3",
+      "search": {
+        "queryText": "_sourceCategory=*cloudtrail* \n|json auto| count",
+        "defaultTimeRange": "-6h",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual"
+      },
+      "searchSchedule": null,
+      "description": ""
+    }
+  ]
+}

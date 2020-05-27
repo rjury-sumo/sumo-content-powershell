@@ -9,13 +9,14 @@
 
     .EXAMPLE
     Start the default single session, using SUMO_ACCESS_ID and KEY variables but a custom endpoint
-    new-ContentSession -endpoint 'https://api.au.sumologic.com' 
-    $FolderNameToExport = "MyFolder"
+    $s1 = new-ContentSession -endpoint 'https://api.au.sumologic.com' 
+    $FolderNameToExport = "test"
+    $parent_folder = get-PersonalFolder 
     $export_id = ($parent_folder.children | where {$_.ItemType -eq "Folder" -and $_.name -eq $FolderNameToExport}).id
     $export_item_path = get-ContentPath -id $export_id
     $item_by_path = get-ContentByPath -path $export_item_path
-    $export_item = start-ContentExportJob -id $export_id
-    $export_item | Convertto-Json -Depth 100
+    $export_item =  get-ExportContent -id $export_id
+    $export_item |  ConvertTo-Json -Depth 100 | Out-File -FilePath ./temp.json -Encoding ascii -Force -ErrorAction Stop
 
     .EXAMPLE
     Using two sessions s1 and s2. Provide -sumo_session param to commands to specify instance.
@@ -384,25 +385,25 @@ function get-ContentExportJobResult {
     Specify a session, defaults to $sumo_session
 
     .EXAMPLE
-    (start-ContentExport -id $export_id ) | ConvertTo-Json -Depth 100
+    (get-ExportContent -id $export_id ) | ConvertTo-Json -Depth 100
 
     .OUTPUTS
     PSCustomObject. Content of the export job. 
 #>
-function start-ContentExport {
+function get-ExportContent {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter(Mandatory=$true)][string] $id ,
         [parameter(Mandatory=$false)][string] $poll_secs=1,
         [parameter(Mandatory=$false)][string] $max_tries=15
 )
-    $job = start-ContentExportJob -id $id -session $sumo_session
+    $job = start-ContentExportJob -id $id -sumo_session $sumo_session
     $tries = 0
 
     While  (($job) -and ($max_tries -gt $tries)) {
         $tries = $tries +1     
         Write-Verbose "polling id: $id $($job['jobId']). try: $tries of $max_tries"
-        $job_state = get-ContentExportJobStatus -job $job['jobId'] -id $id -session $sumo_session
+        $job_state = get-ContentExportJobStatus -job $job['jobId'] -id $id -sumo_session $sumo_session
         Write-Verbose  ($job_state.status)
         if ($job_state.status -eq 'Success') {
             
@@ -413,7 +414,7 @@ function start-ContentExport {
     }   
     Write-Verbose "job poll completed: status: $($job_state.status) contentId: $id jobId: $($job['jobId'])"
     if ($job_state.status -eq 'Success') {
-        $result = get-ContentExportJobResult -job $job['jobId'] -id $id -session $sumo_session
+        $result = get-ContentExportJobResult -job $job['jobId'] -id $id -sumo_session $sumo_session
     } else { Write-Error 'Job failed or timed out';}
     return  $result
 }
@@ -479,4 +480,64 @@ function get-ContentCopyJobStatus {
 
 )
     return invoke-sumo -path "content/$id/copy/$job/status" -method 'GET' -session $sumo_session
+}
+
+<#
+    .DESCRIPTION
+    Start a content Import job using content id
+
+    .PARAMETER id
+    content id
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .PARAMETER contentJSON
+    Content in JSON format sent as body. Note if this is from a file use gc -Path ./temp.json -Raw
+
+    .PARAMETER overwrite
+    bool string defaults to false, sets true to overwrite.
+
+    .OUTPUTS
+    Hashtable. keys: folderId; jobId
+#>
+function start-ContentImportJob {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter(Mandatory=$true)][string] $folderId ,
+        [parameter(Mandatory=$true)] $contentJSON ,
+        [parameter(Mandatory=$false)][string] $overwrite = $false
+
+)
+    return @{'folderId' = $id; 'jobId' = (invoke-sumo -path "content/folders/$folderId/import" -method 'POST' -session $sumo_session -Body $contentJSON -params @{ 'overwrite' = $overwrite ;}).id  } 
+}
+
+<#
+    .DESCRIPTION
+    Get status of a content import job
+
+    .PARAMETER folderId
+    content id
+
+    .PARAMETER jobId
+    import job id
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .EXAMPLE
+    get-contentimportJobStatus -jobId '4EA1C8F29371B157' -folderId '0000000000AB8526'
+
+    .OUTPUTS
+    PSCustomObject. Job status, including 'status' field
+
+#>
+function get-ContentimportJobStatus {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter(Mandatory=$true)][string] $jobId,
+        [parameter(Mandatory=$true)][string] $folderId
+
+)
+    return invoke-sumo -path "content/$folderId/import/$jobId/status" -method 'GET' -session $sumo_session
 }
