@@ -151,7 +151,8 @@ function invoke-sumo {
         [parameter(Mandatory)][string] $path,
         [parameter()][string] $method = 'GET',
         [parameter()][Hashtable] $params,
-        [parameter()][string] $body
+        [parameter()][string] $body,
+        [parameter()][string] $v = "v2"
     )
 
     if ($session -and $session.endpoint) { 
@@ -161,7 +162,7 @@ function invoke-sumo {
             "isAdminMode" = $session.isAdminMode
           }
 
-        $uri = (@($session.endpoint,'api/v2',$path) -join "/") -replace '//v2','/v2'
+        $uri = (@($session.endpoint,"api/$v",$path) -join "/") -replace '//v','/v'
         write-verbose "session: $($session.name) invoke_sumo $uri $method"
         if ($params) {
             $qStr = getQueryString($params)
@@ -540,4 +541,340 @@ function get-ContentimportJobStatus {
 
 )
     return invoke-sumo -path "content/$folderId/import/$jobId/status" -method 'GET' -session $sumo_session
+}
+
+
+<#
+    .DESCRIPTION
+    get /v1/fields
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject. returns list
+#>
+function get-Fields {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session
+        
+)
+    return (invoke-sumo -path "fields" -session $sumo_session -v 'v1').data
+}
+
+<#
+    .DESCRIPTION
+    get /v1/partitions
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject. returns list
+#>
+function get-Partitions {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session
+        
+)
+    return (invoke-sumo -path "partitions" -session $sumo_session -v 'v1').data
+}
+
+
+# /v1/scheduledViews
+
+<#
+    .DESCRIPTION
+    get /v1/scheduledViews
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject. returns list
+#>
+function get-scheduledViews {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session
+        
+)
+    return (invoke-sumo -path "scheduledViews" -session $sumo_session -v 'v1').data
+}
+
+<#
+    .DESCRIPTION
+    get /v1/roles
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject. returns list
+#>
+function get-roles {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session
+        
+)
+    return (invoke-sumo -path "roles" -session $sumo_session -v 'v1').data
+}
+
+<#
+    .DESCRIPTION
+    get /v1/users
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject. returns list
+#>
+function get-users {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session
+        
+)
+    return (invoke-sumo -path "users" -session $sumo_session -v 'v1').data
+}
+
+
+<#
+    .DESCRIPTION
+    get /v1/healthEvents
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject. returns list
+#>
+function get-healthEvents {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session
+        
+)
+    return (invoke-sumo -path "healthEvents" -session $sumo_session -v 'v1').data
+}
+
+<#
+    .DESCRIPTION
+    get /v1/ingestBudgets
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject. returns list
+#>
+function get-ingestBudgets {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter()][string] $v = "v2"
+        
+)
+    return (invoke-sumo -path "ingestBudgets" -session $sumo_session -v $v).data
+}
+
+<#
+    .DESCRIPTION
+    get /v1/apps
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject. returns list
+#>
+function get-apps {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter()][string] $v = "v1"
+        
+)
+    return (invoke-sumo -path "apps" -session $sumo_session -v $v).data
+}
+
+<#
+    .DESCRIPTION
+    get /v1/lookupTables
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject. returns list
+#>
+function get-lookupTables {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter()][string] $v = "v1"
+        
+)
+    return (invoke-sumo -path "lookupTables" -session $sumo_session -v $v).data
+}
+
+<#
+    .DESCRIPTION
+    get /v1/connections
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject. returns list
+#>
+function get-connections {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter()][string] $v = "v1"
+        
+)
+    return (invoke-sumo -path "connections" -session $sumo_session -v $v).data
+}
+
+<#
+    .DESCRIPTION
+    get /v1/extractionRules
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject. returns list
+#>
+function get-extractionRules {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter()][string] $v = "v1"
+        
+)
+    return (invoke-sumo -path "extractionRules" -session $sumo_session -v $v).data
+}
+
+
+<#
+    .DESCRIPTION
+    get /v1/collectors
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject. returns list
+#>
+function get-collectors {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter()][string] $v = "v1",
+        [parameter()][string] $limit=100,
+        [parameter()][string] $offset=0
+        
+)
+    return (invoke-sumo -path "collectors" -session $sumo_session -v $v -params @{'limit'=$limit;'offset'=$offset}).collectors
+}
+
+<#
+    .DESCRIPTION
+    get /collectors/offline
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject. returns list
+#>
+function get-offlineCollectors {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter()][string] $v = "v1"
+        
+)
+    return (invoke-sumo -path "collectors/offline" -session $sumo_session -v $v ).collectors
+}
+
+<#
+    .DESCRIPTION
+    get /v1/collectors/{id}
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject.
+#>
+function get-collectorById {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter()][string] $v = "v1",
+        [parameter(Mandatory=$true)] $id
+        
+)
+    return (invoke-sumo -path "collectors/$id" -session $sumo_session -v $v ).collector
+}
+
+
+<#
+    .DESCRIPTION
+    get /v1/collectors/name/[name]
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject.
+#>
+function get-collectorByName {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter()][string] $v = "v1",
+        [parameter(Mandatory=$true)][string] $Name
+        
+)
+    $encodedName = [System.Web.HttpUtility]::UrlEncode($name) 
+    return (invoke-sumo -path "collectors/name/$encodedName/" -session $sumo_session -v $v ).collector
+}
+
+
+<#
+    .DESCRIPTION
+    get /collectors/[collectorId]/sources
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject.
+#>
+function get-sources {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter()][string] $v = "v1",
+        [parameter(Mandatory=$true)] $id
+        
+)
+    return (invoke-sumo -path "collectors/$id/sources" -session $sumo_session -v $v ).sources
+}
+
+
+
+<#
+    .DESCRIPTION
+    get /collectors/[collectorId]/sources/[sourceId]
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .OUTPUTS
+    PSCustomObject.
+#>
+function get-sourceById {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter()][string] $v = "v1",
+        [parameter(Mandatory=$true)] $id,
+        [parameter(Mandatory=$true)] $sourceid
+
+        
+)
+    return (invoke-sumo -path "collectors/$id/sources/$sourceid" -session $sumo_session -v $v ).source
 }
