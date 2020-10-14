@@ -1,1 +1,7 @@
 data/*
+terraform.tfstate
+.terraform/plugins/darwin_amd64/README.md
+.terraform/plugins/darwin_amd64/LICENSE
+.terraform/plugins/darwin_amd64/CHANGELOG.md
+.terraform/plugins/darwin_amd64/lock.json
+.terraform/plugins/darwin_amd64/terraform-provider-sumologic_v2.3.0
