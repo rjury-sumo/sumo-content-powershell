@@ -5,3 +5,5 @@ terraform.tfstate
 .terraform/plugins/darwin_amd64/CHANGELOG.md
 .terraform/plugins/darwin_amd64/lock.json
 .terraform/plugins/darwin_amd64/terraform-provider-sumologic_v2.3.0
+terraform.tfstate.backup
+crash.log
