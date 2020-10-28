@@ -80,7 +80,7 @@ function new-ContentSession() {
         [parameter(Mandatory=$false)][string] $accessid=$env:SUMO_ACCESS_ID,
         [parameter(Mandatory=$false)][string] $accesskey=$env:SUMO_ACCESS_KEY,
         [parameter(Mandatory=$false)][string] $name=$accessid,
-        [parameter()][bool] $isAdminMode = $false
+        [parameter(Mandatory=$false)][ValidateSet('true','false')][string] $isAdminMode = "false"
 
     )
     $Credential = New-Object System.Management.Automation.PSCredential $accessid, ($accesskey | ConvertTo-SecureString -AsPlainText -Force )
@@ -207,6 +207,51 @@ function get-PersonalFolder {
 }
 
 
+<#
+    .DESCRIPTION
+    get global folder /v2/content/folders/global
+        
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .EXAMPLE
+    get-GlobalFolder
+
+    .EXAMPLE
+    $parent_folder = get-GlobalFolder
+
+    .OUTPUTS
+    PSCustomObject. returns GlobalFolder object
+#>
+function get-GlobalFolder {
+    param(
+    [parameter()][SumoAPISession]$sumo_session = $sumo_session
+    )
+    return invoke-sumo -path "content/folders/global" -session $sumo_session
+}
+
+<#
+    .DESCRIPTION
+    get global folder /v2/content/folders/adminRecommended
+        
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .EXAMPLE
+    get-adminRecommended
+
+    .EXAMPLE
+    $parent_folder = get-adminRecommended
+
+    .OUTPUTS
+    PSCustomObject. returns adminRecommended object
+#>
+function get-adminRecommended {
+    param(
+    [parameter()][SumoAPISession]$sumo_session = $sumo_session
+    )
+    return invoke-sumo -path "content/folders/adminRecommended" -session $sumo_session
+}
 <#
     .DESCRIPTION
     get /v2/content/folders/{id}
@@ -877,4 +922,57 @@ function get-sourceById {
         
 )
     return (invoke-sumo -path "collectors/$id/sources/$sourceid" -session $sumo_session -v $v ).source
+}
+
+<#
+    .DESCRIPTION
+    Replaces properties in second object with properties in the first object.
+    Also optionally you can substitute text anywhere in the JSON-ified version of the from object using -replace -with
+    Function will return a new instance of -to object.
+
+    .PARAMETER from
+    source object (typically say a source or collector)
+
+    .PARAMETER to
+    to object (typically say a source or collector)
+
+    .PARAMETER replace_pattern
+    literal text or pattern to replace text using -replace in the JSON-ified to objct
+    
+    .PARAMETER with
+    text to replace with
+
+    .EXAMPLE
+    replace any text in the target object with new text
+    copy-proppy -to $mysource -replace_pattern 'test' -with 'prod'
+    
+    .OUTPUTS
+    PSCustomObject.
+#>
+function copy-proppy {
+    param (
+        [Parameter(Mandatory = $false)] $from,
+        [Parameter(Mandatory = $true)]$to,
+        [Parameter(Mandatory = $false)] $props = @("filters", "manualPrefixRegexp", "defaultDateFormats", "name", "description"),
+        [Parameter(Mandatory = $false)]$replace_pattern,
+        [Parameter(Mandatory = $false)]$with
+
+    )
+
+    if ($replace_pattern -and $with ) {
+        $out = ($to | ConvertTo-Json -Depth 10) -replace $replace_pattern, $with | ConvertFrom-Json -Depth 10
+
+    }
+    else {
+        $out = $to | ConvertTo-Json -Depth 10 | ConvertFrom-Json -Depth 10
+
+    }
+
+    if ($from -and $props) {
+        foreach ($p in $props) {
+            $out.$p = $from.$p
+        }
+    }
+ 
+    return $out
 }
