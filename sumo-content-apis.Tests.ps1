@@ -4,6 +4,7 @@ BeforeAll {
     $endpoint = 'https://api.au.sumologic.com'
 
     $sumo = new-ContentSession -endpoint $endpoint    
+    $sumo_admin =  $sumo = new-ContentSession -endpoint $endpoint  -isadminmode 'true'
 
     $resource = @{}
 $resource['source'] = @'
@@ -129,8 +130,25 @@ Describe "sumo-content-apis-tests" {
 
     Context "folders" {
 
+
         It "get-PersonalFolder" -tag 'integration' {
-            (get-personalfolder).name | Should -Be 'Personal'
+            (get-personalfolder).name | Should -Match 'Personal|[rR]ick'
+        }
+
+        It "get-folderContent global defaults to global" -tag 'integration' {
+            (get-folderContent).name | Should -Match 'Personal|[rR]ick'
+
+        }
+
+        It "get-folderContent global defaults to global" -tag 'integration' {
+            (get-folderContent -type global)[0].itemType | Should -Be 'Folder'
+            (get-folderContent -type global).name | Should -Match 'Personal|[rR]ick'
+
+        }
+        It "get-foldercontent adminRecommended returns adminRecommended" -tag 'integration' {
+            (get-folderContent -type 'adminRecommended')[0].itemType | Should -Be 'Folder'
+            (get-folderContent -type 'adminRecommended')[0].name | Should -Match 'Admin Recommended'
+
         }
 
     }
@@ -138,7 +156,7 @@ Describe "sumo-content-apis-tests" {
     Context "content" {
 
         It "get-contentpath returns path for personalfolder" -Tag "integration" {
-            get-contentpath -id (get-personalfolder).id | Should -match '/Library/Users/.+'
+            get-contentpath -id (get-personalfolder)[0].id | Should -match '/Library/Users/.+'
         }
     }
 }
