@@ -1,0 +1,68 @@
+{
+    "title": "Kubernetes Dashboard",
+    "description": "A view of pods, namespaces and nodes of your cluster.",
+    "folderId": "000000000C1C17C6",
+    "topologyLabelMap": {
+      "service": [
+        "kube-scheduler",
+        "kube-dns"
+      ]
+    },
+    "refreshInterval": 0,
+    "timeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-15m"
+      }
+    },
+    "panels": [
+      {
+        "id": "2F7D449E3D511066",
+        "key": "panelca6280e4a75fca45",
+        "title": "This panel shows memory usage for your kubernetes pod.",
+        "visualSettings": "{\\\"general\\\":{\\\"type\\\":\\\"column\\\"}",
+        "keepVisualSettingsConsistentWithParent": true,
+        "panelType": "SumoSearchPanel"
+      }
+    ],
+    "layout": {
+      "layoutType": "Grid",
+      "layoutStructures": [
+        {
+          "key": "panelPANE-3DC454FD977E2A46",
+          "structure": "{\\\"height\\\":5,\\\"width\\\":9,\\\"x\\\":0,\\\"y\\\":0}"
+        }
+      ]
+    },
+    "variables": [
+      {
+        "id": "string",
+        "name": "_sourceHost",
+        "displayName": "Source Host",
+        "defaultValue": "default_value",
+        "sourceDefinition": {
+          "variableSourceType": "MetadataVariableSourceDefinition"
+        },
+        "allowMultiSelect": false,
+        "includeAllOption": true,
+        "hideFromUI": false
+      }
+    ],
+    "theme": "light",
+    "coloringRules": [
+      {
+        "scope": "CPU_*",
+        "singleSeriesAggregateFunction": "Average",
+        "multipleSeriesAggregateFunction": "Average",
+        "colorThresholds": [
+          {
+            "color": "FFFFFF",
+            "min": 0,
+            "max": 50
+          }
+        ]
+      }
+    ],
+    "id": "B23OjNs5ZCyn5VdMwOBoLo3PjgRnJSAlNTKEDAcpuDG2CIgRe9KFXMofm2H2"
+  }
