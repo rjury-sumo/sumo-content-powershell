@@ -1,0 +1,17 @@
+{
+    "id": 987654321,
+    "name": "rick-test-2",
+    "category": "test/labs/2",
+    "automaticDateParsing": true,
+    "multilineProcessingEnabled": false,
+    "useAutolineMatching": true,
+    "forceTimeZone": false,
+    "filters": [],
+    "cutoffTimestamp": 0,
+    "encoding": "UTF-8",
+    "fields": {},
+    "messagePerRequest": true,
+    "url": "https://collectors.au.sumologic.com/receiver/v1/http/abcdefg==",
+    "sourceType": "HTTP",
+    "alive": true
+  }

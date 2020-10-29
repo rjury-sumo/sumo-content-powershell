@@ -1125,6 +1125,9 @@ function copy-proppy {
 
     )
 
+    write-verbose ($from | out-string)
+    write-verbose ($to |out-string )
+    
     if ($replace_pattern -and $with ) {
         $new = ($to | ConvertTo-Json -Depth 10) -replace $replace_pattern, $with 
         $out = $new | ConvertFrom-Json -Depth 10

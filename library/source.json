@@ -1,0 +1,17 @@
+{
+    "id": 123456789,
+    "name": "rick-test-default",
+    "category": "test/labs/default",
+    "automaticDateParsing": true,
+    "multilineProcessingEnabled": true,
+    "useAutolineMatching": true,
+    "forceTimeZone": false,
+    "filters": [],
+    "cutoffTimestamp": 0,
+    "encoding": "UTF-8",
+    "fields": {},
+    "messagePerRequest": false,
+    "url": "https://collectors.au.sumologic.com/receiver/v1/http/abcdefg==",
+    "sourceType": "HTTP",
+    "alive": true
+  }
