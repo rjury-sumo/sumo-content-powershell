@@ -140,16 +140,19 @@ Describe "sumo-content-apis-tests" {
 
         }
 
-        It "get-folderContent global defaults to global" -tag 'integration' {
+        It "get-folderContent global defaults to global" -tag 'integration,folders' {
             (get-folderContent -type global)[0].itemType | Should -Be 'Folder'
             (get-folderContent -type global).name | Should -Match 'Personal|[rR]ick'
 
         }
-        It "get-foldercontent adminRecommended returns adminRecommended" -tag 'integration' {
-            (get-folderContent -type 'adminRecommended')[0].itemType | Should -Be 'Folder'
-            (get-folderContent -type 'adminRecommended')[0].name | Should -Match 'Admin Recommended'
 
+        It "get-foldercontent adminRecommended returns adminRecommended" -tag 'integration,folders' {
+            $f = get-folder -id (get-PersonalFolder).id
+            $f.id| Should -Match '[A-F0-9]{16}'
+            $f.itemType | Should -Be 'Folder'
         }
+
+        
 
     }
 
