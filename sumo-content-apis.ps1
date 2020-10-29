@@ -76,30 +76,32 @@ public class SumoAPISession
 #>
 function new-ContentSession() {
     Param(
-        [parameter(Mandatory=$false)][string] $endpoint=$env:SUMOLOGIC_API_ENDPOINT,
-        [parameter(Mandatory=$false)][string] $accessid=$env:SUMO_ACCESS_ID,
-        [parameter(Mandatory=$false)][string] $accesskey=$env:SUMO_ACCESS_KEY,
-        [parameter(Mandatory=$false)][string] $name=$accessid,
-        [parameter(Mandatory=$false)][ValidateSet('true','false')][string] $isAdminMode = "false"
+        [parameter(Mandatory = $false)][string] $endpoint = $env:SUMOLOGIC_API_ENDPOINT,
+        [parameter(Mandatory = $false)][string] $accessid = $env:SUMO_ACCESS_ID,
+        [parameter(Mandatory = $false)][string] $accesskey = $env:SUMO_ACCESS_KEY,
+        [parameter(Mandatory = $false)][string] $name = $accessid,
+        [parameter(Mandatory = $false)][ValidateSet('true', 'false')][string] $isAdminMode = "false"
 
     )
     $Credential = New-Object System.Management.Automation.PSCredential $accessid, ($accesskey | ConvertTo-SecureString -AsPlainText -Force )
 
     # default endpoint
-    if ($endpoint) { } else { $endpoint = "https://api.us2.sumologic.com"}
-        $endpoint = $endpoint -replace "\/$",""
-        if ($endpoint -notmatch "^https://api.[a-z0-9\.]+\.sumologic.com$") {
-            Write-Error "endpoint: $endpoint must be a valid API endpoint: not match ^https://api.[a-z0-9\.]+\.sumologic.com$"
-            #exit 1
-        }
-        $uri = (@($endpoint,'api/v2','content/folders/personal') -join "/") -replace '//v2','/v2'
-        Write-Verbose "establish session to: $uri for $accessid"
-        $res = Invoke-WebRequest -Uri $uri -method Get -Credential $Credential -SessionVariable webSession
-        if ($res) {
-            # export the default session object to shell
-            $Script:sumo_session = [SumoAPISession]::new($endpoint, $webSession,$name,$isAdminMode)
-          return $sumo_session
-        } else { Write-Error "session failed." ; 
+    if ($endpoint) { } else { $endpoint = "https://api.us2.sumologic.com" }
+    $endpoint = $endpoint -replace "\/$", ""
+    if ($endpoint -notmatch "^https://api.[a-z0-9\.]+\.sumologic.com$") {
+        Write-Error "endpoint: $endpoint must be a valid API endpoint: not match ^https://api.[a-z0-9\.]+\.sumologic.com$"
+        #exit 1
+    }
+    $uri = (@($endpoint, 'api/v2', 'content/folders/personal') -join "/") -replace '//v2', '/v2'
+    Write-Verbose "establish session to: $uri for $accessid"
+    $res = Invoke-WebRequest -Uri $uri -method Get -Credential $Credential -SessionVariable webSession
+    if ($res) {
+        # export the default session object to shell
+        $Script:sumo_session = [SumoAPISession]::new($endpoint, $webSession, $name, $isAdminMode)
+        return $sumo_session
+    }
+    else {
+        Write-Error "session failed." ; 
         #exit 1
     }
 }
@@ -107,10 +109,10 @@ function new-ContentSession() {
 
 function getQueryString([hashtable]$form) {
     $sections = $form.GetEnumerator() | Sort-Object -Property Name | ForEach-Object {
-      "{0}={1}" -f ([System.Web.HttpUtility]::UrlEncode($_.Name)), ([System.Web.HttpUtility]::UrlEncode($_.Value))
+        "{0}={1}" -f ([System.Web.HttpUtility]::UrlEncode($_.Name)), ([System.Web.HttpUtility]::UrlEncode($_.Value))
     }
     $sections -join "&"
-  }
+}
 
 
 <#
@@ -159,10 +161,10 @@ function invoke-sumo {
         $headers = @{
             "content-type" = "application/json";
             "accept"       = "application/json";
-            "isAdminMode" = $session.isAdminMode
-          }
+            "isAdminMode"  = $session.isAdminMode
+        }
 
-        $uri = (@($session.endpoint,"api/$v",$path) -join "/") -replace '//v','/v'
+        $uri = (@($session.endpoint, "api/$v", $path) -join "/") -replace '//v', '/v'
         write-verbose "session: $($session.name) invoke_sumo $uri $method"
         if ($params) {
             $qStr = getQueryString($params)
@@ -171,13 +173,15 @@ function invoke-sumo {
         if ($body) {
             $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers -Body $body).Content | convertfrom-json
     
-        } else {
+        }
+        else {
             $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers  ).Content | convertfrom-json
         }
-    } else {
+    }
+    else {
         Write-Error "you must supply a valid session object to invoke-sumo"
     }
-  return $r
+    return $r
 }
 
 
@@ -201,7 +205,7 @@ function invoke-sumo {
 #>
 function get-PersonalFolder {
     param(
-    [parameter()][SumoAPISession]$sumo_session = $sumo_session
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session
     )
     return invoke-sumo -path "content/folders/personal" -session $sumo_session
 }
@@ -225,7 +229,7 @@ function get-PersonalFolder {
 #>
 function get-GlobalFolder {
     param(
-    [parameter()][SumoAPISession]$sumo_session = $sumo_session
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session
     )
     return invoke-sumo -path "content/folders/global" -session $sumo_session
 }
@@ -248,13 +252,138 @@ function get-GlobalFolder {
 #>
 function get-adminRecommended {
     param(
-    [parameter()][SumoAPISession]$sumo_session = $sumo_session
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session
     )
     return invoke-sumo -path "content/folders/adminRecommended" -session $sumo_session
 }
+
+
 <#
     .DESCRIPTION
-    get /v2/content/folders/{id}
+    Get status of a folder job
+
+    .PARAMETER jobid
+    export job id
+
+    .PARAMETER type
+    global or adminRecommended
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .EXAMPLE
+    get-folderJobStatus -jobid '4EA1C8F29371B157'
+
+    .OUTPUTS
+    PSCustomObject. Job status, including 'status' field
+
+    #>
+function get-folderJobStatus {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter(Mandatory = $true)][string] $jobid,
+        [parameter(Mandatory = $false)][ValidateSet('global', 'adminRecommended')][string] $type = "global"
+    
+    )
+    return invoke-sumo -path "content/folders/$type/$jobid/status" -method 'GET' -session $sumo_session
+}
+    
+<#
+        .DESCRIPTION
+        Get generated output of a global folder job.
+    
+        .PARAMETER jobid
+        jobid 
+    
+
+        .PARAMETER type
+        global or adminRecommended
+
+        .PARAMETER sumo_session
+        Specify a session, defaults to $sumo_session
+    
+        .EXAMPLE
+        get-folderJobResult -jobid '4EA1C8F29371B157'
+    
+        .OUTPUTS
+        PSCustomObject. Content of the export job, includes a data key
+    #>
+function get-folderJobResult {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter(Mandatory = $true)][string] $jobid,
+        [parameter(Mandatory = $false)][ValidateSet('global', 'adminRecommended')][string] $type = "global"
+    
+    )
+    return invoke-sumo -path "content/folders/$type/$jobid/result" -method 'GET' -session $sumo_session
+}
+    
+    
+<#
+        .DESCRIPTION
+        Start a global folder job, poll for completion and return the completed export object.
+        global returns list of children, isadminRecommended returns a folder object with children property.
+        as per https://api.au.sumologic.com/docs/#operation/getAdminRecommendedFolderAsyncResult
+
+        .PARAMETER type
+        global or adminRecommended
+
+         .PARAMETER poll_secs
+        sleep time for status poll
+        
+        .PARAMETER max_tries
+        number of polling attempts before giving up.
+    
+        .PARAMETER sumo_session
+        Specify a session, defaults to $sumo_session
+    
+        .EXAMPLE
+        get-folderContent -type global
+    
+        .OUTPUTS
+        PSCustomObject. Content of the export job. 
+    #>
+function get-folderContent {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter(Mandatory = $false)][string] $poll_secs = 1,
+        [parameter(Mandatory = $false)][string] $max_tries = 15,
+        [parameter(Mandatory = $false)][ValidateSet('global', 'adminRecommended')][string] $type = "global"
+    )
+    if ($type -eq 'global') {
+        $jobid = (get-GlobalFolder -sumo_session $sumo_session).id
+    }
+    else {
+        $jobid = (get-adminRecommended -sumo_session $sumo_session ).id 
+    }
+
+    $tries = 0
+    
+    While (($jobid) -and ($max_tries -gt $tries)) {
+        $tries = $tries + 1     
+        Write-Verbose "polling $jobid try: $tries of $max_tries"
+        $job_state = get-folderJobStatus -job $jobid  -type $type -sumo_session $sumo_session
+        Write-Verbose  ($job_state.status)
+        if ($job_state.status -eq 'Success') {
+                
+            break
+        }
+        else {
+            Start-Sleep -Seconds $poll_secs
+        }
+    }   
+    Write-Verbose "job poll completed: status: $($job_state.status) jobId: $($jobid)"
+    if ($job_state.status -eq 'Success') {
+        $result = get-folderJobResult -job $jobid  -type $type  -sumo_session $sumo_session
+    }
+    else { Write-Error 'Job failed or timed out'; return $false }
+    Write-Verbose ($result | convertto-json)
+    if ($type -eq 'global') { return $result.data } else { return $result }
+}
+
+<#
+    .DESCRIPTION
+    get /v2/content/folders/adminRecommended
 
     .PARAMETER id
     content id
@@ -271,12 +400,48 @@ function get-adminRecommended {
 function get-Folder {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(Mandatory=$true)][string] $id 
+        [parameter(Mandatory = $true)][string] $id 
         
-)
+    )
     return invoke-sumo -path "content/folders/$id" -session $sumo_session
 }
 
+<#
+    .DESCRIPTION
+    create a new folder
+        
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .EXAMPLE
+    new-folder -parentId (get-PersonalFolder -sumo_session $s3).id -name 'api-create-test'
+
+    .OUTPUTS
+    PSCustomObject. 
+#>
+function new-folder {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter(Mandatory = $true)][string] $parentId,  
+        [parameter(Mandatory = $true)][string] $name, 
+        [parameter(Mandatory = $false)][string] $description = 'no description' ,
+        [parameter(Mandatory = $false)][bool] $checkfirst = $false
+    )
+
+    $body = @{ 
+        "name"        = $name;
+        "parentId"    = $parentId; 
+        "description" = $description;
+    } 
+
+    if ($checkfirst) {
+        $itemPath = (get-ContentPath -id $parentId ) + "/" + $name
+        if (get-ContentByPath -path $itemPath -ErrorAction SilentlyContinue ) { return $true } 
+    }
+    
+    return invoke-sumo -path "content/folders" -method 'POST' -session $sumo_session -Body ($body | ConvertTo-Json) 
+
+}
 
 <#
     .DESCRIPTION
@@ -299,9 +464,9 @@ function get-Folder {
 function get-ContentByPath {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(Mandatory=$true)][string] $path 
-)
-    return invoke-sumo -path "content/path" -params @{ 'path' = $path;} -session $sumo_session
+        [parameter(Mandatory = $true)][string] $path 
+    )
+    return invoke-sumo -path "content/path" -params @{ 'path' = $path; } -session $sumo_session
 }
 
 
@@ -324,8 +489,8 @@ function get-ContentByPath {
 function get-ContentPath {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(Mandatory=$true)][string] $id 
-)
+        [parameter(Mandatory = $true)][string] $id 
+    )
     return (invoke-sumo -path "content/$id/path" -session $sumo_session).path 
 }
 
@@ -346,8 +511,8 @@ function get-ContentPath {
 function start-ContentExportJob {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(Mandatory=$true)][string] $id 
-)
+        [parameter(Mandatory = $true)][string] $id 
+    )
     return @{'contentId' = $id; 'jobId' = (invoke-sumo -path "content/$id/export/" -method 'POST' -session $sumo_session).id } 
 }
 
@@ -375,10 +540,10 @@ function start-ContentExportJob {
 function get-ContentExportJobStatus {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(Mandatory=$true)][string] $job,
-        [parameter(Mandatory=$true)][string] $id
+        [parameter(Mandatory = $true)][string] $job,
+        [parameter(Mandatory = $true)][string] $id
 
-)
+    )
     return invoke-sumo -path "content/$id/export/$job/status" -method 'GET' -session $sumo_session
 }
 
@@ -406,10 +571,10 @@ function get-ContentExportJobStatus {
 function get-ContentExportJobResult {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(Mandatory=$true)][string] $job,
-        [parameter(Mandatory=$true)][string] $id
+        [parameter(Mandatory = $true)][string] $job,
+        [parameter(Mandatory = $true)][string] $id
 
-)
+    )
     return invoke-sumo -path "content/$id/export/$job/result" -method 'GET' -session $sumo_session
 }
 
@@ -439,29 +604,31 @@ function get-ContentExportJobResult {
 function get-ExportContent {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(Mandatory=$true)][string] $id ,
-        [parameter(Mandatory=$false)][string] $poll_secs=1,
-        [parameter(Mandatory=$false)][string] $max_tries=15
-)
+        [parameter(Mandatory = $true)][string] $id ,
+        [parameter(Mandatory = $false)][string] $poll_secs = 1,
+        [parameter(Mandatory = $false)][string] $max_tries = 15
+    )
     $job = start-ContentExportJob -id $id -sumo_session $sumo_session
     $tries = 0
 
-    While  (($job) -and ($max_tries -gt $tries)) {
-        $tries = $tries +1     
+    While (($job) -and ($max_tries -gt $tries)) {
+        $tries = $tries + 1     
         Write-Verbose "polling id: $id $($job['jobId']). try: $tries of $max_tries"
         $job_state = get-ContentExportJobStatus -job $job['jobId'] -id $id -sumo_session $sumo_session
         Write-Verbose  ($job_state.status)
         if ($job_state.status -eq 'Success') {
             
-             break
-        } else {
+            break
+        }
+        else {
             Start-Sleep -Seconds $poll_secs
         }
     }   
     Write-Verbose "job poll completed: status: $($job_state.status) contentId: $id jobId: $($job['jobId'])"
     if ($job_state.status -eq 'Success') {
         $result = get-ContentExportJobResult -job $job['jobId'] -id $id -sumo_session $sumo_session
-    } else { Write-Error 'Job failed or timed out';}
+    }
+    else { Write-Error 'Job failed or timed out'; }
     return  $result
 }
 
@@ -488,12 +655,12 @@ function get-ExportContent {
 function start-ContentCopyJob {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(Mandatory=$true)][string] $id ,
-        [parameter(Mandatory=$true)][string] $destinationFolder 
-)
-    return @{'contentId' = $id; 
-    'jobId' = (invoke-sumo -path "content/$id/copy" -method 'POST' -session $sumo_session  -params @{ 'destinationFolder' = $destinationFolder;}).id ; 
-    'destinationFolder' = $destinationFolder;
+        [parameter(Mandatory = $true)][string] $id ,
+        [parameter(Mandatory = $true)][string] $destinationFolder 
+    )
+    return @{'contentId'    = $id; 
+        'jobId'             = (invoke-sumo -path "content/$id/copy" -method 'POST' -session $sumo_session  -params @{ 'destinationFolder' = $destinationFolder; }).id ; 
+        'destinationFolder' = $destinationFolder;
     } 
 }
 
@@ -521,10 +688,10 @@ function start-ContentCopyJob {
 function get-ContentCopyJobStatus {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(Mandatory=$true)][string] $job,
-        [parameter(Mandatory=$true)][string] $id
+        [parameter(Mandatory = $true)][string] $job,
+        [parameter(Mandatory = $true)][string] $id
 
-)
+    )
     return invoke-sumo -path "content/$id/copy/$job/status" -method 'GET' -session $sumo_session
 }
 
@@ -550,12 +717,12 @@ function get-ContentCopyJobStatus {
 function start-ContentImportJob {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(Mandatory=$true)][string] $folderId ,
-        [parameter(Mandatory=$true)] $contentJSON ,
-        [parameter(Mandatory=$false)][string] $overwrite = $false
+        [parameter(Mandatory = $true)][string] $folderId ,
+        [parameter(Mandatory = $true)] $contentJSON ,
+        [parameter(Mandatory = $false)][string] $overwrite = $false
 
-)
-    return @{'folderId' = $id; 'jobId' = (invoke-sumo -path "content/folders/$folderId/import" -method 'POST' -session $sumo_session -Body $contentJSON -params @{ 'overwrite' = $overwrite ;}).id  } 
+    )
+    return @{'folderId' = $id; 'jobId' = (invoke-sumo -path "content/folders/$folderId/import" -method 'POST' -session $sumo_session -Body $contentJSON -params @{ 'overwrite' = $overwrite ; }).id } 
 }
 
 <#
@@ -581,10 +748,10 @@ function start-ContentImportJob {
 function get-ContentimportJobStatus {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(Mandatory=$true)][string] $jobId,
-        [parameter(Mandatory=$true)][string] $folderId
+        [parameter(Mandatory = $true)][string] $jobId,
+        [parameter(Mandatory = $true)][string] $folderId
 
-)
+    )
     return invoke-sumo -path "content/$folderId/import/$jobId/status" -method 'GET' -session $sumo_session
 }
 
@@ -603,7 +770,7 @@ function get-Fields {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session
         
-)
+    )
     return (invoke-sumo -path "fields" -session $sumo_session -v 'v1').data
 }
 
@@ -621,7 +788,7 @@ function get-Partitions {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session
         
-)
+    )
     return (invoke-sumo -path "partitions" -session $sumo_session -v 'v1').data
 }
 
@@ -642,7 +809,7 @@ function get-scheduledViews {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session
         
-)
+    )
     return (invoke-sumo -path "scheduledViews" -session $sumo_session -v 'v1').data
 }
 
@@ -660,7 +827,7 @@ function get-roles {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session
         
-)
+    )
     return (invoke-sumo -path "roles" -session $sumo_session -v 'v1').data
 }
 
@@ -678,7 +845,7 @@ function get-users {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session
         
-)
+    )
     return (invoke-sumo -path "users" -session $sumo_session -v 'v1').data
 }
 
@@ -697,7 +864,7 @@ function get-healthEvents {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session
         
-)
+    )
     return (invoke-sumo -path "healthEvents" -session $sumo_session -v 'v1').data
 }
 
@@ -716,7 +883,7 @@ function get-ingestBudgets {
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter()][string] $v = "v2"
         
-)
+    )
     return (invoke-sumo -path "ingestBudgets" -session $sumo_session -v $v).data
 }
 
@@ -735,7 +902,7 @@ function get-apps {
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter()][string] $v = "v1"
         
-)
+    )
     return (invoke-sumo -path "apps" -session $sumo_session -v $v).data
 }
 
@@ -754,7 +921,7 @@ function get-lookupTables {
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter()][string] $v = "v1"
         
-)
+    )
     return (invoke-sumo -path "lookupTables" -session $sumo_session -v $v).data
 }
 
@@ -773,7 +940,7 @@ function get-connections {
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter()][string] $v = "v1"
         
-)
+    )
     return (invoke-sumo -path "connections" -session $sumo_session -v $v).data
 }
 
@@ -792,7 +959,7 @@ function get-extractionRules {
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter()][string] $v = "v1"
         
-)
+    )
     return (invoke-sumo -path "extractionRules" -session $sumo_session -v $v).data
 }
 
@@ -811,11 +978,11 @@ function get-collectors {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter()][string] $v = "v1",
-        [parameter()][string] $limit=100,
-        [parameter()][string] $offset=0
+        [parameter()][string] $limit = 100,
+        [parameter()][string] $offset = 0
         
-)
-    return (invoke-sumo -path "collectors" -session $sumo_session -v $v -params @{'limit'=$limit;'offset'=$offset}).collectors
+    )
+    return (invoke-sumo -path "collectors" -session $sumo_session -v $v -params @{'limit' = $limit; 'offset' = $offset }).collectors
 }
 
 <#
@@ -833,7 +1000,7 @@ function get-offlineCollectors {
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter()][string] $v = "v1"
         
-)
+    )
     return (invoke-sumo -path "collectors/offline" -session $sumo_session -v $v ).collectors
 }
 
@@ -851,9 +1018,9 @@ function get-collectorById {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter()][string] $v = "v1",
-        [parameter(Mandatory=$true)] $id
+        [parameter(Mandatory = $true)] $id
         
-)
+    )
     return (invoke-sumo -path "collectors/$id" -session $sumo_session -v $v ).collector
 }
 
@@ -872,9 +1039,9 @@ function get-collectorByName {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter()][string] $v = "v1",
-        [parameter(Mandatory=$true)][string] $Name
+        [parameter(Mandatory = $true)][string] $Name
         
-)
+    )
     $encodedName = [System.Web.HttpUtility]::UrlEncode($name) 
     return (invoke-sumo -path "collectors/name/$encodedName/" -session $sumo_session -v $v ).collector
 }
@@ -894,9 +1061,9 @@ function get-sources {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter()][string] $v = "v1",
-        [parameter(Mandatory=$true)] $id
+        [parameter(Mandatory = $true)] $id
         
-)
+    )
     return (invoke-sumo -path "collectors/$id/sources" -session $sumo_session -v $v ).sources
 }
 
@@ -916,11 +1083,11 @@ function get-sourceById {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter()][string] $v = "v1",
-        [parameter(Mandatory=$true)] $id,
-        [parameter(Mandatory=$true)] $sourceid
+        [parameter(Mandatory = $true)] $id,
+        [parameter(Mandatory = $true)] $sourceid
 
         
-)
+    )
     return (invoke-sumo -path "collectors/$id/sources/$sourceid" -session $sumo_session -v $v ).source
 }
 
