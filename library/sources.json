@@ -1,0 +1,18 @@
+{
+  "id": 1234567890,
+  "name": "MyTerraformHTTPSource",
+  "category": "my/source/category",
+  "automaticDateParsing": true,
+  "multilineProcessingEnabled": true,
+  "useAutolineMatching": true,
+  "forceTimeZone": false,
+  "timeZone": "Etc/UTC",
+  "filters": [],
+  "cutoffTimestamp": 0,
+  "encoding": "UTF-8",
+  "fields": {},
+  "messagePerRequest": false,
+  "url": "https://collectors.au.sumologic.com/receiver/v1/abcdefg==",
+  "sourceType": "HTTP",
+  "alive": true
+}

@@ -1,0 +1,16 @@
+{
+  "id": 1234567890,
+  "name": "MyTerraformCollector",
+  "timeZone": "Etc/UTC",
+  "fields": {},
+  "links": [
+    {
+      "rel": "sources",
+      "href": "/v1/collectors/108493052/sources"
+    }
+  ],
+  "collectorType": "Hosted",
+  "collectorVersion": "",
+  "lastSeenAlive": 1604009118191,
+  "alive": true
+}

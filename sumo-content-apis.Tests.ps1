@@ -84,6 +84,13 @@ $resource['personalFolder'] = @'
   ]
 }
 '@
+
+    foreach ($f in dir ./Library/*.json ) {
+        $json = Get-Content -Path "$($f.FullName)" 
+        $name = $f.Name -replace "\.json",""
+        $resource["$name"] = $json | convertfrom-json  -depth 10
+    }
+
 }
 
 Describe "sumo-content-apis-tests" {
