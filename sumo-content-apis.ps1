@@ -664,7 +664,6 @@ function start-ContentCopyJob {
     } 
 }
 
-
 <#
     .DESCRIPTION
     Get status of a content copy job
@@ -1127,19 +1126,19 @@ function copy-proppy {
     )
 
     if ($replace_pattern -and $with ) {
-        $out = ($to | ConvertTo-Json -Depth 10) -replace $replace_pattern, $with | ConvertFrom-Json -Depth 10
-
+        $new = ($to | ConvertTo-Json -Depth 10) -replace $replace_pattern, $with 
+        $out = $new | ConvertFrom-Json -Depth 10
+       
     }
     else {
         $out = $to | ConvertTo-Json -Depth 10 | ConvertFrom-Json -Depth 10
 
     }
-
     if ($from -and $props) {
         foreach ($p in $props) {
             $out.$p = $from.$p
         }
     }
- 
+
     return $out
 }

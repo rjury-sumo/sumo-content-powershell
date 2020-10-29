@@ -74,5 +74,5 @@ start-ContentImportJob -folderId $to_folder.id -contentJSON (gc -Path ./data/exp
 # TODO
 - make it a real module not dot source
 - include the delete endpoint for content
-- add the folder api endpoints like create / delete
-- add the move content endpoint
+- add the folder api endpoints update,delete
+- add the move content job
