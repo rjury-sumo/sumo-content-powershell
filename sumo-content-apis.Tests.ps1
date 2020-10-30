@@ -21,30 +21,30 @@ Describe "sumo-content-apis-tests" {
 
     Context "environment" -Tag "env" {
 
-        It "acceptance test 3" -Tag "integration" {
+        It "acceptance test 3" {
             $endpoint | Should -Match 'https:..[^ ]+.sumologic.com'
         }
 
     }
 
-    Context "connection" {
+    Context "connection" -Tag "connection" {
 
-        It "endpoint" -tag 'integration' {
+        It "endpoint"  {
             $sumo.endpoint | Should -Be $endpoint
         }
 
-        It "websession" -Tag "integration" {
+        It "websession"  {
             $sumo.WebSession.gettype().name | Should -Be 'WebRequestSession'
         }
     }
 
-    Context "functions" {
+    Context "functions" -tag "functions" {
 
-        It "getquerystring returns urlencoded string" -tag 'unit' {
+        It "getquerystring returns urlencoded string"  {
             getQueryString @{ 'a' = 'b'; 'c' = 'a b c ' } | Should -Be 'a=b&c=a+b+c+'
         }
 
-        It "copy-proppy replaces text" -Tag "unit" {
+        It "copy-proppy replaces text"  {
             (copy-proppy -to $resource['source'] -replace_pattern 'test' -with 'prod').category | Should -Be 'prod/labs/default'
         }
 
@@ -54,25 +54,25 @@ Describe "sumo-content-apis-tests" {
         }
     }
 
-    Context "folders" {
+    Context "folders" -tag "folders" {
 
 
-        It "get-PersonalFolder" -tag 'integration' {
+        It "get-PersonalFolder"  {
             (get-personalfolder).name | Should -Match 'Personal|[rR]ick'
         }
 
-        It "get-folderContent global defaults to global" -tag 'integration' {
+        It "get-folderContent global defaults to global"  {
             (get-folderContent).name | Should -Match 'Personal|[rR]ick'
 
         }
 
-        It "get-folderContent global defaults to global" -tag 'integration,folders' {
+        It "get-folderContent global defaults to global"  {
             (get-folderContent -type global)[0].itemType | Should -Be 'Folder'
             (get-folderContent -type global).name | Should -Match 'Personal|[rR]ick'
 
         }
 
-        It "get-foldercontent adminRecommended returns adminRecommended" -tag 'integration' {
+        It "get-foldercontent adminRecommended returns adminRecommended"  {
             $f = get-folder -id (get-PersonalFolder).id
             $f.id| Should -Match '[A-F0-9]{16}'
             $f.itemType | Should -Be 'Folder'
@@ -82,7 +82,7 @@ Describe "sumo-content-apis-tests" {
 
     }
 
-    Context "content" {
+    Context "content" -tag "content" {
 
         It "get-contentpath returns path for personalfolder" -Tag "integration" {
             get-contentpath -id (get-personalfolder)[0].id | Should -match '/Library/Users/.+'
