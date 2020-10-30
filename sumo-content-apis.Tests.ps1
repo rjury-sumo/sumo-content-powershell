@@ -84,8 +84,22 @@ Describe "sumo-content-apis-tests" {
 
     Context "content" -tag "content" {
 
-        It "get-contentpath returns path for personalfolder" -Tag "integration" {
+        It "get-contentpath returns path for personalfolder"  {
             get-contentpath -id (get-personalfolder)[0].id | Should -match '/Library/Users/.+'
+        }
+    }
+
+
+    Context "collectors" -tag "collectors" {
+
+        It "get-collectorByName -Name 'test' returns test collector"  {
+            (get-collectorByName -Name 'test' ).name | Should -Be 'test'
+        }
+    }
+
+    Context "sources" -tag "sources" {
+        It "get-sources by id returns list of sources" -tag "sources" {
+            (get-sources -id (get-collectorByName -Name 'test' ).id)[0].sourceType | Should -Be 'HTTP'
         }
     }
 }
