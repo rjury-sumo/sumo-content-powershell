@@ -1,0 +1,10 @@
+HTTP_Status_Code,Error_Code
+301,moved
+401,unauthorized
+403,forbidden
+404,notfound
+405,method.unsupported
+415,contenttype.invalid
+429,rate.limit.exceeded
+500,internal.error
+503,service.unavailable
