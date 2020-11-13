@@ -70,15 +70,15 @@ function new-sumoReturnBlock {
         "/v1/fields,get" = "data";
     }
 
-    $block = "    return (invoke-sumo -path `"$($endpoint.uri -replace '^/v[0-9]/','')`" -method $($endpoint.method.toupper()) -session `$sumo_session -v '$($endpoint.v)')"
+    $block = "    return (invoke-sumo -path `"$($endpoint.uri -replace '^/v[0-9]/','')`" -method $($endpoint.method.toupper()) -session `$sumo_session -v '$($endpoint.v)'"
 
     foreach ($param in $endpoint.params) {
         $block = $block -replace "{$param}", "`$$param"
     }
 
     if ($endpoint.method -imatch 'put|post') {
-        $block = $block + ' -Body ($body | ConvertTo-Json)'
-    }
+        $block = $block + ' -Body ($body | ConvertTo-Json) )'
+    } else { $block = $block + ')'}
 
     if ($tweaks["$($endpoint.name)"]) { $block = $block + '.' + $tweaks["$($endpoint.name)"] }
 

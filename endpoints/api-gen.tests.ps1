@@ -137,7 +137,7 @@ Describe "api-gen tests" {
 
     Context "select-sumoEndpoint" -tag "unit" {
         It "select-sumoEndpoint -method 'get' -api 'fields' -uri 'fields`$' returns /v1/fields,get endpoint" {
-            (select-sumoEndpoint -endpoints $endpoints -method 'get' -api 'fields' -uri 'fields$')| convertto-json -depth 10  -compress | Should -be '{"verb":false,"method":"get","api":"fields","params":[],"name":"/v1/fields,get","v":"v1","uri":"/v1/fields"}'
+            (select-sumoEndpoint -endpoints $endpoints -method 'get' -api 'fields' -uri 'fields$')| convertto-json -depth 10  -compress | Should -be '{"name":"/v1/fields,get","uri":"/v1/fields","params":[],"method":"get","api":"fields","v":"v1","verb":false}'
         }
     }
 
@@ -175,4 +175,12 @@ Describe "api-gen tests" {
             (new-SumoParamsBlock -endpoint (select-sumoEndpoint -endpoints $endpoints -method post )[0] ) -match 'body'  | Should -Be $true
         }
     }
+
+    Context "new-sumoReturnBlock" -tag "unit" {
+        It "new-sumoReturnBlock for post adds body param" {
+            new-sumoReturnBlock -endpoint (select-sumoEndpoint -endpoints $endpoints -method post )[0] | Should -Be ('    return (invoke-sumo -path "accessKeys" -method POST -session $sumo_session -v ' + "'v1'" + ' -Body ($body | ConvertTo-Json) )')
+        }
+    }
+
+    
 }
