@@ -84,6 +84,10 @@ function new-ContentSession() {
     $Credential = New-Object System.Management.Automation.PSCredential $accessid, ($accesskey | ConvertTo-SecureString -AsPlainText -Force )
 
     # default endpoint
+    if ($endpoint -match '^(au|ca|de|eu|fed|jap|in|us2)$') {
+        $endpoint = ("https://api.SERVER.sumologic.com" -replace "SERVER",$endpoint)
+    }
+    
     if ($endpoint) { } else { $endpoint = "https://api.us2.sumologic.com" }
     $endpoint = $endpoint -replace "\/$", ""
     if ($endpoint -notmatch "^https://api.[a-z0-9\.]+\.sumologic.com$") {
