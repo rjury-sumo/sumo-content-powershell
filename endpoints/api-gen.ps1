@@ -77,7 +77,7 @@ function new-sumoReturnBlock {
     }
 
     if ($endpoint.method -imatch 'put|post') {
-        $block = $block + ' -Body ($body | ConvertTo-Json) )'
+        $block = $block + ' -body ($body | ConvertTo-Json -depth 10) )'
     } else { $block = $block + ')'}
 
     if ($tweaks["$($endpoint.name)"]) { $block = $block + '.' + $tweaks["$($endpoint.name)"] }
