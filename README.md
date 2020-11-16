@@ -1,15 +1,20 @@
 # sumo-content-powershell
 powershell commands for interacting with content and folder apis
 
+## src
+theses are the source files to dot source the functions.
+for now it's not a psm just dot source.
+
+## endpoints
+this folder contains some files with sumo api endpoints and automation to bulk generate api code.
+
 # setup
 right now this is not a true module. 
 
-To use is 'dot source' it in a powershell session to create the functions and type e.g:
+To use is 'dot source' it in a powershell session to create the functions and sumo data type:
 ```
-. ./sumo-content-apis.ps1
+foreach ($f in dir ./src/*.ps1) { . $f.fullname }
 ```
-
-note because we define a custom type you can only dot source the module ONE TIME in a powershell session. It's a well known issue on the interwebs.
 
 # Examples of usage
 
@@ -19,7 +24,14 @@ The session is saved as a global variable which subsequent commands will default
 Get a content item by id or path.
 
 ```
-new-ContentSession
+new-ContentSession -endpoint 'au'
+```
+
+or multiple sessions:
+
+```
+$test = new-ContentSession -endpoint 'au'
+$live = new-ContentSession -endpoint 'us2' -accessid $env:accessidlive -accesskey $env:accesskeylive
 ```
 
 ## Get A folder
@@ -73,6 +85,5 @@ start-ContentImportJob -folderId $to_folder.id -contentJSON (gc -Path ./data/exp
 
 # TODO
 - make it a real module not dot source
-- include the delete endpoint for content
-- add the folder api endpoints update,delete
-- add the move content job
+- migrate more api commands from the endpoints/src after validating/testing
+- write more unit test.
