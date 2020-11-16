@@ -1,3 +1,5 @@
+. ./api-gen.ps1
+
 $endpoints = new-sumoEndpointsList
 foreach ($api in ($endpoints.api | uniq)) {
     $apiendpoints = select-sumoEndpoint -endpoints (select-sumoEndpoint -endpoints $endpoints -api $api)
