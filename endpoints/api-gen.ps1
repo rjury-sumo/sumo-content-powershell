@@ -166,8 +166,8 @@ function new-sumofunctionname {
     $psverb = "$($endpoint.method)"
     if ($endpoint.method -match 'post') { $psverb = "New" }
     if ($endpoint.method -match 'put') { $psverb = "Set" }
-    if ($endpoint.verb -match 'reset|enable') { $psverb = "Reset"; }
-    if ($endpoint.verb -match 'disable') { $psverb = "Set"; }
+    if ($endpoint.verb -match 'reset') { $psverb = "Reset"; }
+    if ($endpoint.verb -match 'enable|disable') { $psverb = "Set"; }
 
     if ($endpoint.uri -match '\{[a-z]*id\}') {
         $psobject = $psobject + 'ById'
