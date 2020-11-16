@@ -1,8 +1,8 @@
 BeforeAll {
-    . (Get-ChildItem -Recurse 'api-gen.ps1').FullName
-    $endpoints = new-sumoEndpointsList
+  . (Get-ChildItem -Recurse 'api-gen.ps1').FullName
+  $endpoints = new-sumoEndpointsList
 
-    $endpointsSampleJSON = @'
+  $endpointsSampleJSON = @'
     [
         {
           "method": "get",
@@ -106,81 +106,101 @@ BeforeAll {
         }
       ]
 '@
-        $endpointsSample = $endpointsSampleJSON | ConvertFrom-Json
+  $endpointsSample = $endpointsSampleJSON | ConvertFrom-Json
 }
 
 Describe "api-gen tests" {
 
-    Context "new-sumoEndpointsList" -Tag "unit" {
+  Context "new-sumoEndpointsList" -Tag "unit" {
 
-        It "new-sumoEndpointsList returns list" {
-            $endpoints.count | Should -BeGreaterThan 100
-        }
-
-        It "new-sumoEndpointsList [0] has a name" {
-            $endpoints[0].name | Should -Match 'v[0-9]/[a-z]+'
-        }
-
-        It "new-sumoEndpointsList [0] has a method" {
-            $endpoints[0].method | Should -Match '^[a-z]+$'
-        }
+    It "new-sumoEndpointsList returns list" {
+      $endpoints.count | Should -BeGreaterThan 100
     }
 
-
-    Context "tottitlecase" -Tag "unit" {
-
-        It "totitlecase returns UpperCase" {
-            toTitleCase 'upperCase' | Should -Be 'UpperCase'
-        }
-
+    It "new-sumoEndpointsList [0] has a name" {
+      $endpoints[0].name | Should -Match 'v[0-9]/[a-z]+'
     }
 
-    Context "select-sumoEndpoint" -tag "unit" {
-        It "select-sumoEndpoint -method 'get' -api 'fields' -uri 'fields`$' returns /v1/fields,get endpoint" {
-            (select-sumoEndpoint -endpoints $endpoints -method 'get' -api 'fields' -uri 'fields$')| convertto-json -depth 10  -compress | Should -be '{"name":"/v1/fields,get","uri":"/v1/fields","params":[],"method":"get","api":"fields","v":"v1","verb":false}'
-        }
+    It "new-sumoEndpointsList [0] has a method" {
+      $endpoints[0].method | Should -Match '^[a-z]+$'
+    }
+  }
+
+
+  Context "tottitlecase" -Tag "unit" {
+
+    It "totitlecase returns UpperCase" {
+      toTitleCase 'upperCase' | Should -Be 'UpperCase'
     }
 
-    Context "new-sumoReturnBlock" -tag "unit" {
-        It "new-sumoReturnBlock for /v1/fields,get returns     return (invoke-sumo -path `"fields`" -method GET -session $sumo_session -v 'v1').data" {
-            new-sumoReturnBlock -endpoint $endpointsSample[0] | Should -Match " +return .invoke-sumo -path .fields. -method GET -session .sumo_session -v 'v1'..data"
-        }
+  }
 
-        It "new-sumoReturnBlock for /v1/fields/builtin/{id},get returns     return (invoke-sumo -path `"fields/builtin/$id`" -method GET -session $sumo_session -v 'v1')" {
-            new-sumoReturnBlock -endpoint $endpointsSample[3] | Should -Match " +return .invoke-sumo -path .fields/builtin/.id. -method GET -session .sumo_session -v 'v1'"
-        }
+  Context "select-sumoEndpoint" -tag "unit" {
+    It "select-sumoEndpoint -method 'get' -api 'fields' -uri 'fields`$' returns /v1/fields,get endpoint" {
+      (select-sumoEndpoint -endpoints $endpoints -method 'get' -api 'fields' -uri 'fields$') | convertto-json -depth 10  -compress | Should -be '{"name":"/v1/fields,get","uri":"/v1/fields","params":[],"method":"get","api":"fields","v":"v1","verb":false}'
+    }
+  }
+
+  Context "new-sumoReturnBlock" -tag "unit" {
+    It "new-sumoReturnBlock for /v1/fields,get returns     return (invoke-sumo -path `"fields`" -method GET -session $sumo_session -v 'v1').data" {
+      new-sumoReturnBlock -endpoint $endpointsSample[0] | Should -Match " +return .invoke-sumo -path .fields. -method GET -session .sumo_session -v 'v1'..data"
     }
 
-    Context "select-SumoCommentBlock" -tag "unit" {
-        It "new-SumoCommentBlock -endpoint $endpointsSample[0] returns uri and params" {
-            ((new-SumoCommentBlock -endpoint $endpointsSample[0]) -join '`n')  | Should -match "(?s)\.DESCRIPTION.+/v1/fields,get.+PARAMETER sumo_session.+sumo_session[\r\n\s]+\.OUTPUT"
-        }
+    It "new-sumoReturnBlock for /v1/fields/builtin/{id},get returns     return (invoke-sumo -path `"fields/builtin/$id`" -method GET -session $sumo_session -v 'v1')" {
+      new-sumoReturnBlock -endpoint $endpointsSample[3] | Should -Match " +return .invoke-sumo -path .fields/builtin/.id. -method GET -session .sumo_session -v 'v1'"
+    }
 
-        It "new-SumoCommentBlock -endpoint $endpointsSample[3] returns uri and params" {
-            ((new-SumoCommentBlock -endpoint $endpointsSample[3]) -join '`n')  | Should -match "(?s)\.DESCRIPTION.+/v1/fields/builtin.+PARAMETER sumo_session.+PARAMETER id.+OUTPUT"
-        }
+    It "new-sumoReturnBlock for post adds body param" {
+      new-sumoReturnBlock -endpoint (select-sumoEndpoint -endpoints $endpoints -method post )[0] | Should -Be ('    return (invoke-sumo -path "accessKeys" -method POST -session $sumo_session -v ' + "'v1'" + ' -body ($body | ConvertTo-Json -depth 10) )')
+    }
+  }
 
-        It "new-SumoCommentBlock for put adds body" {
-            (new-SumoCommentBlock -endpoint (select-sumoEndpoint -endpoints $endpoints -name 'field' -method put ) ) -match 'body' | Should -Be $true
-        }
+  Context "select-SumoCommentBlock" -tag "unit" {
+    It "new-SumoCommentBlock -endpoint $endpointsSample[0] returns uri and params" {
+      ((new-SumoCommentBlock -endpoint $endpointsSample[0]) -join '`n')  | Should -match "(?s)\.DESCRIPTION.+/v1/fields,get.+PARAMETER sumo_session.+sumo_session[\r\n\s]+\.OUTPUT"
+    }
 
-        It "new-SumoCommentBlock for post adds body" {
-            (new-SumoCommentBlock -endpoint (select-sumoEndpoint -endpoints $endpoints -method post )[0] ) -match 'body' | Should -Be $true
-        }
+    It "new-SumoCommentBlock -endpoint $endpointsSample[3] returns uri and params" {
+      ((new-SumoCommentBlock -endpoint $endpointsSample[3]) -join '`n')  | Should -match "(?s)\.DESCRIPTION.+/v1/fields/builtin.+PARAMETER sumo_session.+PARAMETER id.+OUTPUT"
+    }
+
+    It "new-SumoCommentBlock for put adds body" {
+      (new-SumoCommentBlock -endpoint (select-sumoEndpoint -endpoints $endpoints -name 'field' -method put ) ) -match 'body' | Should -Be $true
+    }
+
+    It "new-SumoCommentBlock for post adds body" {
+      (new-SumoCommentBlock -endpoint (select-sumoEndpoint -endpoints $endpoints -method post )[0] ) -match 'body' | Should -Be $true
+    }
         
+  }
+
+  Context "new-SumoParamsBlock" -tag "unit" {
+    It "new-sumoReturnBlock for post adds body param" {
+      (new-SumoParamsBlock -endpoint (select-sumoEndpoint -endpoints $endpoints -method post )[0] ) -match 'body'  | Should -Be $true
+    }
+  }
+
+  Context "new-sumofunctionname" -tag "unit" {
+    It "new-sumofunctionname for post adds body param" {
+      new-sumofunctionname -endpoint (select-sumoEndpoint -endpoints $endpoints -method get -name 'v1/fields,get') | Should -Be 'Get-Fields'
     }
 
-    Context "new-SumoParamsBlock" -tag "unit" {
-        It "new-sumoReturnBlock for post adds body param" {
-            (new-SumoParamsBlock -endpoint (select-sumoEndpoint -endpoints $endpoints -method post )[0] ) -match 'body'  | Should -Be $true
-        }
+    It "new-sumofunctionname returns get-fieldbyid" {
+      new-sumofunctionname -endpoint (select-sumoEndpoint -endpoints $endpoints -method get -name 'v1/fields/.id.,get') | Should -Be 'Get-FieldById'
     }
 
-    Context "new-sumoReturnBlock" -tag "unit" {
-        It "new-sumoReturnBlock for post adds body param" {
-            new-sumoReturnBlock -endpoint (select-sumoEndpoint -endpoints $endpoints -method post )[0] | Should -Be ('    return (invoke-sumo -path "accessKeys" -method POST -session $sumo_session -v ' + "'v1'" + ' -Body ($body | ConvertTo-Json) )')
-        }
+    It "new-sumofunctionname returns get-fieldbyid" {
+      new-sumofunctionname -endpoint (select-sumoEndpoint -endpoints $endpoints -method get -name '/v1/fields/builtin,get') | Should -Be 'Get-FieldsBuiltin'
     }
+
+    It "new-sumofunctionname returns get-fieldbyid" {
+      new-sumofunctionname -endpoint (select-sumoEndpoint -endpoints $endpoints -name '/v1/fields/.id./disable,delete') | Should -Be 'Set-FieldDisableById'
+    }
+
+    It "new-sumofunctionname returns get-fieldbyid" {
+      new-sumofunctionname -endpoint (select-sumoEndpoint -endpoints $endpoints -name '/v1/fields,post') | Should -Be 'New-Field'
+    }
+  }
 
     
 }

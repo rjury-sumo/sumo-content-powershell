@@ -134,6 +134,7 @@ function new-sumofunctionname {
 
     $psobject = ''
 
+
     foreach ($item in $list ) {
         if ($item -match '^[a-zA-Z]+$') { 
             $add =  "$item"
@@ -147,13 +148,13 @@ function new-sumofunctionname {
                 $add = $add -replace 'sv[0-9]', "$($endpoint.v)"
             }  
             
-            # remove the s for single by id methods. would be nice not to hardcode this!
+            # if we have a {param} remove the traling s but only for certain ones that are not valid plural named
             if ($endpoint.uri -match '\{[a-z]*id\}' -and $item -match 'accessKeys|apps|connections|extractionRules|fields|healthEvents|lookupTables|metricsAlertMonitors|monitors|partitions|roles|scheduledViews|tokens|transformationRules|users|dashboards' -and $item -eq ( $endpoint.uri -split "/")[2]) {
                 $add = $add -replace 's$', ''
             }     
 
-            # 
-            if ($endpoint.verb -notmatch 'get' -and $item -eq ( $endpoint.uri -split "/")[($List.length -1)]) {
+            # if we are not doing a get, and not the last item it's probably a new-item
+            if ($endpoint.method -ne 'get' -and $item -match 'accessKeys|apps|connections|extractionRules|fields|healthEvents|lookupTables|metricsAlertMonitors|monitors|partitions|roles|scheduledViews|tokens|transformationRules|users|dashboards') {
                 $add = $add -replace 's$', ''
             }  
 
@@ -165,8 +166,9 @@ function new-sumofunctionname {
     $psverb = "$($endpoint.method)"
     if ($endpoint.method -match 'post') { $psverb = "New" }
     if ($endpoint.method -match 'put') { $psverb = "Set" }
-    if ($endpoint.verb -match 'reset|enable|disable') { $psverb = "Reset"; }
- 
+    if ($endpoint.verb -match 'reset|enable') { $psverb = "Reset"; }
+    if ($endpoint.verb -match 'disable') { $psverb = "Set"; }
+
     if ($endpoint.uri -match '\{[a-z]*id\}') {
         $psobject = $psobject + 'ById'
     }
