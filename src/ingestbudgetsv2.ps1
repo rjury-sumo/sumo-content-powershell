@@ -14,5 +14,5 @@ function get-ingestBudgets {
         [parameter()][string] $v = "v2"
         
     )
-    return (invoke-sumo -path "ingestBudgets" -session $sumo_session -v $v).data
+    return (invoke-sumo -path "ingestBudgets" -session $sumo_session -v $v)
 }

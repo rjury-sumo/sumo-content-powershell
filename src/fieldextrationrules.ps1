@@ -15,5 +15,5 @@ function get-extractionRules {
         [parameter()][string] $v = "v1"
         
     )
-    return (invoke-sumo -path "extractionRules" -session $sumo_session -v $v).data
+    return (invoke-sumo -path "extractionRules" -session $sumo_session -v $v)
 }

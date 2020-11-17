@@ -15,5 +15,5 @@ function get-apps {
         [parameter()][string] $v = "v1"
         
     )
-    return (invoke-sumo -path "apps" -session $sumo_session -v $v).data
+    return (invoke-sumo -path "apps" -session $sumo_session -v $v)
 }

@@ -14,5 +14,5 @@ function get-connections {
         [parameter()][string] $v = "v1"
         
     )
-    return (invoke-sumo -path "connections" -session $sumo_session -v $v).data
+    return (invoke-sumo -path "connections" -session $sumo_session -v $v)
 }

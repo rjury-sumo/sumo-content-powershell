@@ -85,7 +85,7 @@ function new-ContentSession() {
 
     # default endpoint
     if ($endpoint -match '^(au|ca|de|eu|fed|jap|in|us2)$') {
-        $endpoint = ("https://api.SERVER.sumologic.com" -replace "SERVER",$endpoint)
+        $endpoint = ("https://api.SERVER.sumologic.com" -replace "SERVER", $endpoint)
     }
     
     if ($endpoint) { } else { $endpoint = "https://api.us2.sumologic.com" }
@@ -177,7 +177,8 @@ function invoke-sumo {
         if ($body) {
             if ($body.gettype().Name -eq "String") {
                 # it's already probably json
-            } else {
+            }
+            else {
                 $body = $body | ConvertTo-Json -Depth 10 -Compress
             }
             write-verbose "body: `n$body"
@@ -191,7 +192,13 @@ function invoke-sumo {
     else {
         Write-Error "you must supply a valid session object to invoke-sumo"
     }
-    return $r
+    # often there is an embedded data object
+    if ($r.data) { 
+        return $r.data 
+    }
+    else {
+        return $r
+    }
 }
 
 <#
@@ -230,7 +237,7 @@ function copy-proppy {
     )
 
     write-verbose ($from | out-string)
-    write-verbose ($to |out-string )
+    write-verbose ($to | out-string )
     
     if ($replace_pattern -and $with ) {
         $new = ($to | ConvertTo-Json -Depth 10) -replace $replace_pattern, $with 

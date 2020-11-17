@@ -66,9 +66,6 @@ function new-sumoReturnBlock {
     Param(
         [parameter(Mandatory = $true)]$endpoint
     )
-    $tweaks = @{
-        "/v1/fields,get" = "data";
-    }
 
     $block = "    return (invoke-sumo -path `"$($endpoint.uri -replace '^/v[0-9]/','')`" -method $($endpoint.method.toupper()) -session `$sumo_session -v '$($endpoint.v)'"
 
@@ -79,8 +76,6 @@ function new-sumoReturnBlock {
     if ($endpoint.method -imatch 'put|post') {
         $block = $block + ' -body $body )'
     } else { $block = $block + ')'}
-
-    if ($tweaks["$($endpoint.name)"]) { $block = $block + '.' + $tweaks["$($endpoint.name)"] }
 
     write-verbose $block
     return $block 

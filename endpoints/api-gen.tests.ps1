@@ -142,8 +142,8 @@ Describe "api-gen tests" {
   }
 
   Context "new-sumoReturnBlock" -tag "unit" {
-    It "new-sumoReturnBlock for /v1/fields,get returns     return (invoke-sumo -path `"fields`" -method GET -session $sumo_session -v 'v1').data" {
-      new-sumoReturnBlock -endpoint $endpointsSample[0] | Should -Match " +return .invoke-sumo -path .fields. -method GET -session .sumo_session -v 'v1'..data"
+    It "new-sumoReturnBlock for /v1/fields,get returns     return (invoke-sumo -path `"fields`" -method GET -session $sumo_session -v 'v1')" {
+      new-sumoReturnBlock -endpoint $endpointsSample[0] | Should -Match " +return .invoke-sumo -path .fields. -method GET -session .sumo_session -v 'v1'."
     }
 
     It "new-sumoReturnBlock for /v1/fields/builtin/{id},get returns     return (invoke-sumo -path `"fields/builtin/$id`" -method GET -session $sumo_session -v 'v1')" {

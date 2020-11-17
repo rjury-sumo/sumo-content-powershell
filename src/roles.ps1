@@ -13,5 +13,5 @@ function get-roles {
         [parameter()][SumoAPISession]$sumo_session = $sumo_session
         
     )
-    return (invoke-sumo -path "roles" -session $sumo_session -v 'v1').data
+    return (invoke-sumo -path "roles" -session $sumo_session -v 'v1')
 }

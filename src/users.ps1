@@ -13,5 +13,5 @@ function get-users {
         [parameter()][SumoAPISession]$sumo_session = $sumo_session
         
     )
-    return (invoke-sumo -path "users" -session $sumo_session -v 'v1').data
+    return (invoke-sumo -path "users" -session $sumo_session -v 'v1')
 }

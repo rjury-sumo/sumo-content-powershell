@@ -78,5 +78,5 @@ function get-collectorByName {
         
     )
     $encodedName = [System.Web.HttpUtility]::UrlEncode($name) 
-    return (invoke-sumo -path "collectors/name/$encodedName/" -session $sumo_session -v $v ).collector
+    return (invoke-sumo -path "collectors/name/$encodedName/" -session $sumo_session -v $v )
 }
