@@ -311,3 +311,29 @@ function get-ContentimportJobStatus {
     return invoke-sumo -path "content/$folderId/import/$jobId/status" -method 'GET' -session $sumo_session
 }
 
+<#
+    .DESCRIPTION
+    /v2/content/{id}/move,post
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .PARAMETER id
+    id for post
+
+    .PARAMETER destinationFolderId
+    id of target folder to move to
+
+    .OUTPUTS
+    PSCustomObject.
+#>
+
+function Move-ContentById {
+
+    Param(
+         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+         [parameter(mandatory=$True)]$id,
+         [parameter(mandatory=$True)]$destinationFolderId
+     )
+     return (invoke-sumo -path "content/$id/move" -method POST -session $sumo_session -v 'v2' -body $body -params @{"destinationFolderId" = $destinationFolderId})
+ }
