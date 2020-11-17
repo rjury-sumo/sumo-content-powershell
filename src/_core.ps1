@@ -167,7 +167,7 @@ function invoke-sumo {
         }
 
         $uri = (@($session.endpoint, "api/$v", $path) -join "/") -replace '//v', '/v'
-        write-verbose "session: $($session.name) invoke_sumo $uri $method"
+        write-verbose "session: $($session.name) invoke_sumo $uri $method isAdminMode: $($session.isAdminMode)"
         if ($params) {
             $qStr = getQueryString($params)
             $uri += "?" + $qStr
