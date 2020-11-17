@@ -57,7 +57,10 @@ function Delete-DashboardById {
     Specify a session, defaults to $sumo_session
 
     .PARAMETER id
-    id for get
+    id for get. note this is a url id string e.g Tfj7djZozne6odId5iT8uONiSHtITxRCbhsXNEJ3mtvUxcChTdRHCaIQNsd8 not a content id format.
+
+    .EXAMPLE
+    Get-DashboardById -id Tfj7djZozne6odId5iT8uONiSHtITxRCbhsXNEJ3mtvUxcChTdRHCaIQNsd8 -sumo_session $be 
 
     .OUTPUTS
     PSCustomObject.
@@ -81,7 +84,7 @@ function Get-DashboardById {
     Specify a session, defaults to $sumo_session
 
     .PARAMETER id
-    id for put
+    id for put. note this is a url id string e.g Tfj7djZozne6odId5iT8uONiSHtITxRCbhsXNEJ3mtvUxcChTdRHCaIQNsd8 not a content id format.
 
     .PARAMETER body
     PSCustomObject body for put
