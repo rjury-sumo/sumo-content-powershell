@@ -254,6 +254,6 @@ function new-folder {
         if (get-ContentByPath -path $itemPath -ErrorAction SilentlyContinue ) { return $true } 
     }
     
-    return invoke-sumo -path "content/folders" -method 'POST' -session $sumo_session -Body ($body | ConvertTo-Json) 
+    return invoke-sumo -path "content/folders" -method 'POST' -session $sumo_session -Body $body 
 
 }
