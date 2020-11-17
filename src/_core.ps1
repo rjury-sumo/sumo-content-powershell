@@ -195,9 +195,13 @@ function invoke-sumo {
     # often there is an embedded data object
     if ($r.data) { 
         return $r.data 
-    } elsif ($r.collector) {
+    } elseif ($r.collector) {
         return $r.collector
-    } elsif ($r.apps) {
+    } elseif ($r.sources) {
+        return $r.sources
+    } elseif ($r.source) {
+        return $r.source
+    } elseif ($r.apps) {
         return $r.apps
     }
     else {

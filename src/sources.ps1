@@ -16,7 +16,7 @@ function get-sources {
         [parameter(Mandatory = $true)] $id
         
     )
-    return (invoke-sumo -path "collectors/$id/sources" -session $sumo_session -v $v ).sources
+    return (invoke-sumo -path "collectors/$id/sources" -session $sumo_session -v $v )
 }
 
 
@@ -40,5 +40,5 @@ function get-sourceById {
 
         
     )
-    return (invoke-sumo -path "collectors/$id/sources/$sourceid" -session $sumo_session -v $v ).source
+    return (invoke-sumo -path "collectors/$id/sources/$sourceid" -session $sumo_session -v $v )
 }
