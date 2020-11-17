@@ -155,7 +155,7 @@ function invoke-sumo {
         [parameter(Mandatory)][string] $path,
         [parameter()][string] $method = 'GET',
         [parameter()][Hashtable] $params,
-        [parameter()][string] $body,
+        [parameter()]$body,
         [parameter()][string] $v = "v2"
     )
 
@@ -172,12 +172,20 @@ function invoke-sumo {
             $qStr = getQueryString($params)
             $uri += "?" + $qStr
         }
+
+        Write-Verbose "headers:`n$($headers | convertto-json -depth 10 -compress)"
         if ($body) {
-            $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers -Body $body).Content | convertfrom-json
+            if ($body.gettype().Name -eq "String") {
+                # it's already probably json
+            } else {
+                $body = $body | ConvertTo-Json -Depth 10 -Compress
+            }
+            write-verbose "body: `n$body"
+            $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers -Body $body).Content | convertfrom-json -Depth 10
     
         }
         else {
-            $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers  ).Content | convertfrom-json
+            $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers  ).Content | convertfrom-json -Depth 10
         }
     }
     else {
