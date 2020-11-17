@@ -1,0 +1,46 @@
+{
+  "appDefinition": {
+    "contentId": "0000000000CD0615",
+    "uuid": "d49df0f5-fdae-450c-ac94-3983cc3f69db",
+    "name": "Threat Intel Quick Analysis",
+    "appVersion": "1.0",
+    "preview": false,
+    "manifestVersion": "0.1"
+  },
+  "appManifest": {
+    "family": null,
+    "description": "The Sumo Logic Threat Intel Quick Analysis App helps you identify security threats by correlating daily updated threat definitions from CrowdStrike against your log data using the threat lookup service. This App provides pre built dashboards and queries to analyze threats in your environment for malicious IP, Hash 256, Domain, URL and Email.",
+    "categories": [
+      "Compliance and Security"
+    ],
+    "hoverText": null,
+    "iconURL": "https://app_icons.s3.amazonaws.com/sumocrowdstrike.png",
+    "screenshotURLs": [
+      "https://sumologic-app-data.s3.amazonaws.com/dashboards/ThreatIntelQuickAnalysis/ThreatIntelQuickAnalysisOverview.png",
+      "https://sumologic-app-data.s3.amazonaws.com/dashboards/ThreatIntelQuickAnalysis/ThreatIntelQuickAnalysisDomain.png",
+      "https://sumologic-app-data.s3.amazonaws.com/dashboards/ThreatIntelQuickAnalysis/ThreatIntelQuickAnalysisEmail.png",
+      "https://sumologic-app-data.s3.amazonaws.com/dashboards/ThreatIntelQuickAnalysis/ThreatIntelQuickAnalysisHash256.png",
+      "https://sumologic-app-data.s3.amazonaws.com/dashboards/ThreatIntelQuickAnalysis/ThreatIntelQuickAnalysisIP.png",
+      "https://sumologic-app-data.s3.amazonaws.com/dashboards/ThreatIntelQuickAnalysis/ThreatIntelQuickAnalysisURL.png"
+    ],
+    "helpURL": "https://help.sumologic.com/?cid=6100",
+    "communityURL": "https://support.sumologic.com/hc/en-us/community/topics/200263058-Applications-and-Integrations",
+    "requirements": [],
+    "accountTypes": [],
+    "requiresInstallationInstructions": false,
+    "installationInstructions": null,
+    "parameters": [
+      {
+        "parameterType": "DATA_SOURCE",
+        "parameterId": "LogSources",
+        "dataSourceType": "LOG",
+        "label": "Log source for Threat Intel",
+        "description": "Log source for Threat Intel",
+        "example": null,
+        "hidden": false
+      }
+    ],
+    "author": "Sumo Logic",
+    "authorWebsite": "https://www.sumologic.com"
+  }
+}

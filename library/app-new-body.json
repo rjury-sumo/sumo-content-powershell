@@ -1,0 +1,8 @@
+{
+    "name": "Sumo Logic Configuration App",
+    "description": "Sumo Logic Configuration App to configure collectors and data sources",
+    "destinationFolderId": "00000000000001C8",
+    "dataSourceValues": {
+      "logsrc": "_sourceCategory = api"
+    }
+  }
