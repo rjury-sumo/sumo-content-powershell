@@ -151,7 +151,7 @@ Describe "api-gen tests" {
     }
 
     It "new-sumoReturnBlock for post adds body param" {
-      new-sumoReturnBlock -endpoint (select-sumoEndpoint -endpoints $endpoints -method post )[0] | Should -Be ('    return (invoke-sumo -path "accessKeys" -method POST -session $sumo_session -v ' + "'v1'" + ' -body ($body | ConvertTo-Json -depth 10) )')
+      new-sumoReturnBlock -endpoint (select-sumoEndpoint -endpoints $endpoints -method post )[0] | Should -Be ('    return (invoke-sumo -path "accessKeys" -method POST -session $sumo_session -v ' + "'v1'" + ' -body $body )')
     }
   }
 
