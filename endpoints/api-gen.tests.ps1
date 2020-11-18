@@ -137,7 +137,7 @@ Describe "api-gen tests" {
 
   Context "select-sumoEndpoint" -tag "unit" {
     It "select-sumoEndpoint -method 'get' -api 'fields' -uri 'fields`$' returns /v1/fields,get endpoint" {
-      (select-sumoEndpoint -endpoints $endpoints -method 'get' -api 'fields' -uri 'fields$') | convertto-json -depth 10  -compress | Should -be '{"name":"/v1/fields,get","uri":"/v1/fields","params":[],"method":"get","api":"fields","v":"v1","verb":false}'
+      (select-sumoEndpoint -endpoints $endpoints -method 'get' -api 'fields' -uri 'fields$').name | Should -be "/v1/fields,get"
     }
   }
 

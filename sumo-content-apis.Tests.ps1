@@ -9,7 +9,7 @@ BeforeAll {
 
     $resource = @{}
 
-    foreach ($f in dir ./Library/*.json ) {
+    foreach ($f in dir ./library/*.json ) {
         $json = Get-Content -Path "$($f.FullName)" 
         $name = $f.Name -replace "\.json",""
         $resource["$name"] = $json | convertfrom-json -depth 10
@@ -89,7 +89,7 @@ Describe "sumo-content-apis-tests" {
     Context "content" -tag "content" {
 
         It "get-contentpath returns path for personalfolder"  {
-            get-contentpath -id (get-personalfolder)[0].id | Should -match '/Library/Users/.+'
+            get-contentpath -id (get-personalfolder)[0].id | Should -match '/library/Users/.+'
         }
     }
 
