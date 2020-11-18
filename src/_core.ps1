@@ -25,7 +25,8 @@
     
 #>
 
-Add-Type -TypeDefinition @"
+#if (-not ([System.Management.Automation.PSTypeName]'SumoAPISession').Type) {
+try { [SumoAPISession] | Out-Null } catch { Add-Type -TypeDefinition  @"
 public class SumoAPISession
 {
     public SumoAPISession(string Endpoint, object WebSession, string Name, string isAdminMode) {
@@ -39,8 +40,8 @@ public class SumoAPISession
     public string Name;
     public string isAdminMode;
 }
-"@
-
+"@ 
+}
 
 <#
     .DESCRIPTION
@@ -265,3 +266,9 @@ function copy-proppy {
     return $out
 }
 
+function convertSumoDecimalContentIdToHexId {
+    param (
+        [Parameter(Mandatory = $true)]$id
+    )
+    return ('{0:X16}' -f $id)
+}
