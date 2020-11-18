@@ -83,6 +83,37 @@ get-ExportContent -id $from_folder.id -sumo_session $dev |  ConvertTo-Json -Dept
 start-ContentImportJob -folderId $to_folder.id -contentJSON (gc -Path ./data/export.json -Raw) -overwrite 'true' -sumo_session $live
 ```
 
+# Using the docker image
+
+## custom entry point
+By default a pwsh prompt is the entry point. .
+Then modify the entrypoint e.g
+```
+ENTRYPOINT ["pwsh","-File","/home/demo.ps1"]
+```
+
+## Build the docker container
+to build run
+```
+docker build -t sumologic-content-powershell:latest .
+```
+
+## Starting the container
+
+### windows powershell
+```
+docker run --env SUMO_DEPLOYMENT=us2 --env SUMO_ACCESS_ID=$Env:SUMO_ACCESS_ID --env SUMO_ACCESS_KEY=$Env:SUMO_
+ACCESS_KEY -it sumologic-content-powershell:latest
+```
+
+### bash
+```
+docker run --env SUMO_DEPLOYMENT=au --env SUMO_ACCESS_ID=$SUMO_ACCESS_ID --env SUMO_ACCESS_KEY=$SUMO_ACCESS_KEY -it sumologic-content-powershell:latest
+```
+
+# Tests
+both code solutions have a pester test file with some rather incomplete test coverage!
+
 # TODO
 - make it a real module not dot source
 - migrate more api commands from the endpoints/src after validating/testing
