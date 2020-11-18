@@ -1,0 +1,60 @@
+{
+  "title": "map test",
+  "description": "",
+  "folderId": "0000000000AA9CC1",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-15m"
+    },
+    "to": null
+  },
+  "panels": [
+    {
+      "id": "0D1FB05E9807D506",
+      "key": "panel2178C8119BD3AA46",
+      "title": "map test",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "queryString": "ip ip_address=* | count by ip_address | lookup latitude, longitude, country_name from geo://location on ip=ip_address",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1h"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel2178C8119BD3AA46",
+        "structure": "{\"height\":13,\"width\":16,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "variables": [],
+  "theme": "Light",
+  "coloringRules": null,
+  "id": "Tfj7djZozne6odId5iT8uONiSHtITxRCbhsXNEJ3mtvUxcChTdRHCaIQNsd8"
+}

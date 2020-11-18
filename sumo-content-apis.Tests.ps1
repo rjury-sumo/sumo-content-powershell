@@ -21,7 +21,7 @@ Describe "sumo-content-apis-tests" {
 
     Context "environment" -Tag "env" {
 
-        It "acceptance test 3" {
+        It "endpoint format" {
             $endpoint | Should -Match 'https:..[^ ]+.sumologic.com'
         }
 
@@ -51,6 +51,10 @@ Describe "sumo-content-apis-tests" {
         It "source2 property validation" -Tag "unit" {
             
             (copy-proppy -from $resource['source'] -to $resource['source2'] -props @("name") ).name | Should -Be $resource['source'].name
+        }
+
+        It "convertSumoDecimalContentIdToHexId converts decimal to 16 digit hex string" -Tag "unit" {
+            convertSumoDecimalContentIdToHexId -id 14487342 | Should -Be '0000000000DD0F2E'
         }
     }
 
