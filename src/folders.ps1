@@ -217,7 +217,7 @@ function get-folderContent {
     }
     else { Write-Error 'Job failed or timed out'; return $false }
     Write-Verbose ($result | convertto-json)
-    if ($type -eq 'global') { return $result.data } else { return $result }
+    if ($type -eq 'global') { return $result } else { return $result }
 }
 
 
