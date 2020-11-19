@@ -161,14 +161,17 @@ function invoke-sumo {
         [parameter()][string] $method = 'GET',
         [parameter()][Hashtable] $params,
         [parameter()]$body,
-        [parameter()][string] $v = "v2"
+        [parameter()][string] $v = "v2",
+        [parameter()][Hashtable] $headers
     )
 
     if ($session -and $session.endpoint) { 
-        $headers = @{
-            "content-type" = "application/json";
-            "accept"       = "application/json";
-            "isAdminMode"  = $session.isAdminMode
+        if ($headers) { } else {
+            $headers = @{
+                "content-type" = "application/json";
+                "accept"       = "application/json";
+                "isAdminMode"  = $session.isAdminMode
+            }
         }
 
         $uri = (@($session.endpoint, "api/$v", $path) -join "/") -replace '//v', '/v'
