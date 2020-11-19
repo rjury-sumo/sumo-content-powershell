@@ -1,0 +1,28 @@
+{
+    "name": "Developer Budget",
+    "fieldValue": "dev_30_gb",
+    "capacityBytes": 1000,
+    "timezone": "America/Los_Angeles",
+    "resetTime": 1410,
+    "description": "string",
+    "action": "stopCollecting",
+    "auditThreshold": 85,
+    "createdAt": "2020-11-19T19:28:50Z",
+    "createdByUser": {
+      "id": "0000000006743FDD",
+      "email": "johndoe@acme.com",
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    "modifiedAt": "2020-11-19T19:28:50Z",
+    "modifiedByUser": {
+      "id": "0000000006743FDD",
+      "email": "johndoe@acme.com",
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    "id": "string",
+    "usageBytes": 900,
+    "usageStatus": "Approaching",
+    "numberOfCollectors": 10
+  }

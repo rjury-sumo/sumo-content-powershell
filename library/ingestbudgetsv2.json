@@ -1,0 +1,18 @@
+{
+    "name": "Developer Budget",
+    "scope": "_sourceCategory=*prod*nginx*",
+    "capacityBytes": 1000,
+    "timezone": "America/Los_Angeles",
+    "resetTime": 1410,
+    "description": "string",
+    "action": "stopCollecting",
+    "auditThreshold": 85,
+    "id": "0000000003343FDD",
+    "usageBytes": 900,
+    "usageStatus": "Approaching",
+    "createdAt": "2020-11-19T19:28:50Z",
+    "createdBy": "0000000006743FDD",
+    "modifiedAt": "2020-11-19T19:28:50Z",
+    "modifiedBy": "0000000001243FDD",
+    "budgetVersion": 2
+  }

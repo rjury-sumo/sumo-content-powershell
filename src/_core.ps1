@@ -88,6 +88,10 @@ function new-ContentSession() {
     if ($endpoint -match '^(au|ca|de|eu|fed|jap|in|us2)$') {
         $endpoint = ("https://api.SERVER.sumologic.com" -replace "SERVER", $endpoint)
     }
+
+    if ($endpoint -eq 'prod') {
+        $endpoint = "https://api.sumologic.com" 
+    }
     
     if ($endpoint) { } else { $endpoint = "https://api.us2.sumologic.com" }
     $endpoint = $endpoint -replace "\/$", ""
