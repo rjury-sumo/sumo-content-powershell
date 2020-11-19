@@ -16,7 +16,7 @@ function get-collectors {
         [parameter()][string] $offset = 0
         
     )
-    return (invoke-sumo -path "collectors" -session $sumo_session -v $v -params @{'limit' = $limit; 'offset' = $offset }).collectors
+    return (invoke-sumo -path "collectors" -session $sumo_session -v $v -params @{'limit' = $limit; 'offset' = $offset })
 }
 
 

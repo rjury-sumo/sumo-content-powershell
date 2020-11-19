@@ -198,6 +198,8 @@ function invoke-sumo {
         return $r.data 
     } elseif ($r.collector) {
         return $r.collector
+    } elseif ($r.collectors) {
+        return $r.collectors
     } elseif ($r.sources) {
         return $r.sources
     } elseif ($r.source) {
