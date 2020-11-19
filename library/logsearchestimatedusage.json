@@ -1,0 +1,35 @@
+{
+    "queryString": "error | count by _sourceCategory",
+    "timeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-15m"
+      }
+    },
+    "runByReceiptTime": false,
+    "parsingMode": "AutoParse",
+    "queryParameters": [
+      {
+        "name": "string",
+        "label": "string",
+        "description": "string",
+        "dataType": "string",
+        "value": "string",
+        "autoComplete": {
+          "autoCompleteType": "string",
+          "autoCompleteKey": "Ephemeral-3644138589235809747-1583470806220-parameter",
+          "autoCompleteValues": [
+            {
+              "label": "string",
+              "value": "string"
+            }
+          ],
+          "lookupFileName": "string",
+          "lookupLabelColumn": "string",
+          "lookupValueColumn": "string"
+        }
+      }
+    ],
+    "timezone": "America/Los_Angeles"
+  }

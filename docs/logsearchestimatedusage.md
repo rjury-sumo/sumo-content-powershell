@@ -1,0 +1,3 @@
+# Log Search Estimated Usage API.
+
+Gets the estimated volume of data that would be scanned for a given log search in the Infrequent data tier, over a particular time range. In the Infrequent Data Tier, you pay per query, based on the amount data scanned. You can use this endpoint to get an estimate of the total data that would be scanned before running a query, and refine your query to scan less data, as necessary. For more information see Infrequent data tier.
