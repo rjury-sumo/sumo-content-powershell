@@ -1,0 +1,6 @@
+{
+    "name": "ExtractionRule123",
+    "scope": "_sourceHost=127.0.0.1",
+    "parseExpression": "csv _raw extract 1 as f1",
+    "enabled": true
+  }
