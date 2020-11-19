@@ -40,9 +40,9 @@ function Get-Fields {
  
     Param(
          [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-         [parameter(mandatory=$True)]$body
+         [parameter(mandatory=$True)]$name
      )
-     return (invoke-sumo -path "fields" -method POST -session $sumo_session -v 'v1' -body ($body | ConvertTo-Json -depth 10) )
+     return (invoke-sumo -path "fields" -method POST -session $sumo_session -v 'v1' -body @{ "fieldName" = $name} )
  }
  
  <#
