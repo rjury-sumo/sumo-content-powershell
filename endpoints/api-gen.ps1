@@ -129,7 +129,6 @@ function new-sumofunctionname {
 
     $psobject = ''
 
-
     foreach ($item in $list ) {
         if ($item -match '^[a-zA-Z]+$') { 
             $add =  "$item"
@@ -157,12 +156,13 @@ function new-sumofunctionname {
         }
     }
     
-
+    Write-Verbose "endpoint is: $($endpoint | convertto-json -depth 10| out-string)"
     $psverb = "$($endpoint.method)"
     if ($endpoint.method -match 'post') { $psverb = "New" }
     if ($endpoint.method -match 'put') { $psverb = "Set" }
     if ($endpoint.verb -match 'reset') { $psverb = "Reset"; }
     if ($endpoint.verb -match 'enable|disable') { $psverb = "Set"; }
+    if ($endpoint.method -match 'delete' -and $endpoint.api -notmatch 'fields') { $psverb = "Remove"; }
 
     if ($endpoint.uri -match '\{[a-z]*id\}') {
         $psobject = $psobject + 'ById'

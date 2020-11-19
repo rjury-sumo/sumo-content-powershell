@@ -200,6 +200,12 @@ Describe "api-gen tests" {
     It "new-sumofunctionname returns get-fieldbyid" {
       new-sumofunctionname -endpoint (select-sumoEndpoint -endpoints $endpoints -name '/v1/fields,post') | Should -Be 'New-Field'
     }
+
+    It "new-sumofunctionamme for delete returns Remove-" {
+      new-sumofunctionname -endpoint (select-sumoEndpoint -endpoints $endpoints -name '/v1/ingestBudgets/{id},delete') | Should -Be 'Remove-IngestBudgetv1ById'
+
+      
+    }
   }
 
     
