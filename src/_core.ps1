@@ -187,10 +187,14 @@ function invoke-sumo {
                 # it's already probably json
             }
             else {
-                $body = $body | ConvertTo-Json -Depth 10 -Compress
+                if ($headers['content-type'] = "application/json") {
+                    $body = $body | ConvertTo-Json -Depth 100 -Compress
+                } else {
+                    Write-Verbose "custom body content passed as is due to content-type: $($headers['content-type'])"
+                }
             }
             write-verbose "body: `n$body"
-            $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers -Body $body).Content | convertfrom-json -Depth 10
+            $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers -Body $body).Content | convertfrom-json -Depth 100
     
         }
         else {
