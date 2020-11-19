@@ -404,3 +404,61 @@ function Set-ContentPermissionsRemoveById {
 }
  
  
+ <#
+    .DESCRIPTION
+    /v2/content/folders/{id},get
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .PARAMETER id
+    id for get
+
+    .EXAMPLE
+    Get-ContentFolderById -id ((get-personalfolder).children | where {$_.name -match '^api-create-test$'}).id
+
+    .OUTPUTS
+    PSCustomObject.
+#>
+
+
+function Get-ContentFolderById {
+
+    Param(
+         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+         [parameter(mandatory=$True)]$id
+     )
+     return (invoke-sumo -path "content/folders/$id" -method GET -session $sumo_session -v 'v2')
+ }
+ 
+
+<#
+    .DESCRIPTION
+    /v2/content/folders/{id},put
+
+    .PARAMETER sumo_session
+    Specify a session, defaults to $sumo_session
+
+    .PARAMETER id
+    id for put
+
+    .PARAMETER body
+    PSCustomObject body for put
+
+    .OUTPUTS
+    PSCustomObject.
+#>
+
+
+function Set-ContentFoldersById {
+
+    Param(
+         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+         [parameter(mandatory=$True)]$id,
+         [parameter(mandatory=$True)]$body
+     )
+     return (invoke-sumo -path "content/folders/$id" -method PUT -session $sumo_session -v 'v2' -body $body )
+ }
+ 
+
+ 
