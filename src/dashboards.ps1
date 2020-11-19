@@ -40,7 +40,7 @@ function New-Dashboard {
  #>
  
  
- function Delete-DashboardById {
+ function Remove-DashboardById {
  
     Param(
          [parameter()][SumoAPISession]$sumo_session = $sumo_session,

@@ -80,7 +80,7 @@ function Get-AccessKeys {
  #>
  
  
- function Delete-AccessKeyById {
+ function Remove-AccessKeyById {
  
     Param(
          [parameter()][SumoAPISession]$sumo_session = $sumo_session,

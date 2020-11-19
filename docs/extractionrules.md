@@ -27,5 +27,5 @@ use New-ExtractionRule or Set-ExtractionRuleById passing a body payload similar 
 
 ## delete
 ```
-Delete-ExtractionRuleById -id 00000000000061ED
+Remove-ExtractionRuleById -id 00000000000061ED
 ```

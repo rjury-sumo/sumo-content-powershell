@@ -64,7 +64,7 @@ function New-LookupTable {
  #>
  
  
- function Delete-LookupTableById {
+ function Remove-LookupTableById {
  
     Param(
          [parameter()][SumoAPISession]$sumo_session = $sumo_session,

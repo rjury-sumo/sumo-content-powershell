@@ -76,7 +76,7 @@ function Get-ExtractionRules {
  #>
  
  
- function Delete-ExtractionRuleById {
+ function Remove-ExtractionRuleById {
  
     Param(
          [parameter()][SumoAPISession]$sumo_session = $sumo_session,

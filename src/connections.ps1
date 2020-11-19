@@ -84,7 +84,7 @@ function Get-Connections {
  #>
  
  
- function Delete-ConnectionById {
+ function Remove-ConnectionById {
  
     Param(
          [parameter()][SumoAPISession]$sumo_session = $sumo_session,
