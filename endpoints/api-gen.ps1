@@ -156,7 +156,7 @@ function new-sumofunctionname {
         }
     }
     
-    Write-Verbose "endpoint is: $($endpoint | convertto-json -depth 10| out-string)"
+    Write-Verbose "endpoint is: $($endpoint | convertto-json -depth 100| out-string)"
     $psverb = "$($endpoint.method)"
     if ($endpoint.method -match 'post') { $psverb = "New" }
     if ($endpoint.method -match 'put') { $psverb = "Set" }

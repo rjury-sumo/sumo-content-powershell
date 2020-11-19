@@ -181,7 +181,7 @@ function invoke-sumo {
             $uri += "?" + $qStr
         }
 
-        Write-Verbose "headers:`n$($headers | convertto-json -depth 10 -compress)"
+        Write-Verbose "headers:`n$($headers | convertto-json -depth 100 -compress)"
         if ($body) {
             if ($body.gettype().Name -eq "String") {
                 # it's already probably json

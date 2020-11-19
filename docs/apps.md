@@ -12,7 +12,7 @@ get-apps -sumo_session $be | where {$_.appDefinition.name -match 'Cloudtrail'}
 # get app by uuid
 Get AWS CloudTrail app and show it as JSON
 ```
-Get-AppById -uuid 'ceb7fac5-1137-4a04-a5b8-2e49190be3d4' -sumo_session $be | convertto-json -depth 10
+Get-AppById -uuid 'ceb7fac5-1137-4a04-a5b8-2e49190be3d4' -sumo_session $be | convertto-json -depth 100
 ```
 
 # install an app

@@ -12,7 +12,7 @@ BeforeAll {
     foreach ($f in dir ./library/*.json ) {
         $json = Get-Content -Path "$($f.FullName)" 
         $name = $f.Name -replace "\.json",""
-        $resource["$name"] = $json | convertfrom-json -depth 10
+        $resource["$name"] = $json | convertfrom-json -depth 100
     }
 
 }
