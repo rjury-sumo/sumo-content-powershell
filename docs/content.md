@@ -1,5 +1,16 @@
+# content 
+note isAdminMode can change what you return for some of these calls.
 
-## Export content from a session
+You can access by path or id.
+NOTE: getting a folder by path does NOT return the chidren property.
+If you want to recurse folders use get by 'get-Folder -id $id' instead!
+
+```
+get-ContentPath -id $f.id 
+get-contentbypath -path  '/Library/Users/johndoe@acme.com'
+````
+
+## content exports
 Create a new session and export the 'test' item in the personal folder
 ```
 new-ContentSession -endpoint 'https://api.au.sumologic.com' 
