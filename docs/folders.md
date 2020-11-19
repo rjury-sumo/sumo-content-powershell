@@ -7,9 +7,10 @@ children,createdBy,id,modifiedAt,name,permissions,createdAt,description,itemType
 Note if you want to recurse only the get by **id** includes children in the returned object!
 
 ## Get A folder
-Get an item by id. 
+Get an item by id using either of these:
 ```
 get-Folder -id $export_id  
+Get-ContentFolderById -id ((get-personalfolder).children | where {$_.name -match '^api-create-test$'}).id
 ```
 
 You can also get the path and get items by path. Path items don't have children returned.
