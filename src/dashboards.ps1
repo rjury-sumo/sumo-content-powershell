@@ -129,5 +129,6 @@ function Get-DashboardContentIdById {
          [parameter()][SumoAPISession]$sumo_session = $sumo_session,
          [parameter(mandatory=$True)]$id
      )
-     return (invoke-sumo -path "dashboard/contentId/$id" -method GET -session $sumo_session -v 'v1alpha')
+     $decimalid = (invoke-sumo -path "dashboard/contentId/$id" -method GET -session $sumo_session -v 'v1alpha')
+     return (convertSumoDecimalContentIdToHexId $decimalid )
  }
