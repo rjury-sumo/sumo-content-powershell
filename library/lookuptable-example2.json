@@ -1,0 +1,27 @@
+{
+  "createdAt": "2020-11-19T21:25:06.496Z",
+  "createdBy": "0000000000BC774E",
+  "modifiedAt": "2020-11-19T21:25:06.496Z",
+  "modifiedBy": "0000000000BC774E",
+  "description": "",
+  "fields": [
+    {
+      "fieldName": "id",
+      "fieldType": "string"
+    },
+    {
+      "fieldName": "value",
+      "fieldType": "string"
+    }
+  ],
+  "primaryKeys": [
+    "id"
+  ],
+  "ttl": 0,
+  "sizeLimitAction": "StopIncomingMessages",
+  "name": "test1",
+  "parentFolderId": "0000000000EDB78E",
+  "id": "00000000011D3665",
+  "contentPath": "/Library/Users/rjury+training@sumologic.com/test1",
+  "size": 0
+}

@@ -1,0 +1,23 @@
+{
+    "createdAt": "2020-11-19T19:28:51Z",
+    "createdBy": "0000000006743FDD",
+    "modifiedAt": "2020-11-19T19:28:51Z",
+    "modifiedBy": "0000000006743FE8",
+    "description": "This is a sample lookup table description.",
+    "fields": [
+      {
+        "fieldName": "FieldName1",
+        "fieldType": "boolean"
+      }
+    ],
+    "primaryKeys": [
+      "FieldName1"
+    ],
+    "ttl": 100,
+    "sizeLimitAction": "DeleteOldData",
+    "name": "SampleLookupTable",
+    "parentFolderId": "0000000001C41EE4",
+    "id": "0000000001C41EE4",
+    "contentPath": "/Library/Users/johndoe@acme.com/lookupTable",
+    "size": 100
+  }
