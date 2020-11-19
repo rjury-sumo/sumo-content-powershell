@@ -1,0 +1,18 @@
+{
+  "eventId": "12348ae-de08-4c9b-9749-ab396e6da007",
+  "eventName": "InstalledCollectorOffline",
+  "details": {
+    "trackerId": "InstalledCollectorOffline",
+    "error": "Installed collector and its sources are offline",
+    "description": "Installed collector has not been sending heartbeat and is presumed to be offline.",
+    "minutesSinceLastHeartbeat": "30"
+  },
+  "resourceIdentity": {
+    "id": "00000000080D01234",
+    "name": "Amazon EC2 email server",
+    "type": "Collector"
+  },
+  "eventTime": "2020-10-28T07:00:59.534Z",
+  "subsystem": "Collection",
+  "severityLevel": "Error"
+}
