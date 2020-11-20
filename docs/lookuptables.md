@@ -18,8 +18,13 @@ New-LookupTable -name 'test' -parentFolderId (get-PersonalFolder).id -descriptio
 
 if we use ```-dryrun $true``` it will ouput a json schema for a lookup table. for example:
 ```
+{
   "description": "a test lookup",
   "fields": [
+    {
+      "fieldType": "string",
+      "fieldName": "id"
+    },
     {
       "fieldType": "string",
       "fieldName": "value"
@@ -31,8 +36,9 @@ if we use ```-dryrun $true``` it will ouput a json schema for a lookup table. fo
   "ttl": 100,
   "sizeLimitAction": "DeleteOldData",
   "name": "test",
-  "parentFolderId": "00000000005E5403"
+  "parentFolderId": "0000000000EDB78E"
 }
+
 ```
 
 ## live create

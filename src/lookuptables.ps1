@@ -63,9 +63,9 @@ function New-LookupTable {
             $fieldName=$col 
             $fieldType='string'
         }
+        $fields += @{"fieldName"=$fieldName;"fieldType" = $fieldType}
     }
 
-    $fields += @{"fieldName"=$fieldName;"fieldType" = $fieldType}
     $newlookup.description = $description
     $newlookup.fields = $fields
     $newlookup.primaryKeys = $primaryKeys

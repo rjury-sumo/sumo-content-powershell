@@ -3,6 +3,10 @@
   "fields": [
     {
       "fieldType": "string",
+      "fieldName": "id"
+    },
+    {
+      "fieldType": "string",
       "fieldName": "value"
     }
   ],
@@ -12,5 +16,5 @@
   "ttl": 100,
   "sizeLimitAction": "DeleteOldData",
   "name": "test",
-  "parentFolderId": "00000000005E5403"
+  "parentFolderId": "0000000000EDB78E"
 }
