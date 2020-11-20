@@ -285,3 +285,31 @@ function convertSumoDecimalContentIdToHexId {
     )
     return ('{0:X16}' -f $id)
 }
+
+
+function New-MultipartBoundary {
+    $boundary = [System.Guid]::NewGuid().ToString(); 
+    return $boundary
+ }
+ function New-MultipartContent {
+    param(
+        [Parameter(Mandatory)]
+        $FilePath,
+        [string]$HeaderName='file',
+        $boundary = [System.Guid]::NewGuid().ToString()
+    )
+    
+    $fileBytes = [System.IO.File]::ReadAllBytes($FilePath);
+    $fileEnc = [System.Text.Encoding]::GetEncoding('UTF-8').GetString($fileBytes);
+   
+    $LF = "`r`n";
+
+    $bodyLines = ( 
+        "--$boundary",
+        "Content-Disposition: form-data; name=`"file`"; filename=`"$((dir $filepath).Name)`"",
+        "Content-Type: application/octet-stream$LF",
+        $fileEnc,
+        "--$boundary--$LF" 
+    ) -join $LF
+    return (@{ "multipartBody" = $bodyLines; "boundary" =  $boundary})
+ }

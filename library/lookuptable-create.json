@@ -1,0 +1,16 @@
+{
+    "description": "This is a sample lookup table description.",
+    "fields": [
+      {
+        "fieldName": "FieldName1",
+        "fieldType": "boolean"
+      }
+    ],
+    "primaryKeys": [
+      "FieldName1"
+    ],
+    "ttl": 100,
+    "sizeLimitAction": "DeleteOldData",
+    "name": "SampleLookupTable",
+    "parentFolderId": "0000000001C41EE4"
+  }

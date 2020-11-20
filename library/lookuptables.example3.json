@@ -1,0 +1,16 @@
+{
+  "description": "a test lookup",
+  "fields": [
+    {
+      "fieldType": "string",
+      "fieldName": "value"
+    }
+  ],
+  "primaryKeys": [
+    "id"
+  ],
+  "ttl": 100,
+  "sizeLimitAction": "DeleteOldData",
+  "name": "test",
+  "parentFolderId": "00000000005E5403"
+}
