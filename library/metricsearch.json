@@ -1,0 +1,26 @@
+{
+    "title": "Short title",
+    "description": "Long and detailed description",
+    "timeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-15m"
+      }
+    },
+    "logQuery": "my_metric | timeslice 1m | count by _timeslice",
+    "metricsQueries": [
+      {
+        "rowId": "A",
+        "query": "my_metric | avg"
+      }
+    ],
+    "desiredQuantizationInSecs": 60,
+    "properties": "{ \\\"key\\\": \\\"value\\\" }",
+    "createdAt": "2020-11-22T23:16:52Z",
+    "createdBy": "0000000006743FDD",
+    "modifiedAt": "2020-11-22T23:16:52Z",
+    "modifiedBy": "0000000006743FE8",
+    "id": "000000000000001A",
+    "parentId": "0000000000007D2B"
+  }
