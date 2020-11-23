@@ -216,26 +216,32 @@ function invoke-sumo {
         return $response
     } else {
         $r = $response.content | ConvertFrom-Json -Depth 100
-        #Write-Verbose "`nResponse Content: `n$($response.content)"
-        Write-Verbose "return object type: $($r.GetType().BaseType.name)"
-        # often there is an embedded data object
-        If ($r.GetType().BaseType.name -match "Array") { 
-            return $r
-        } elseif ($r.data) { 
-            return $r.data 
-        } elseif ($r.collector) {
-            return $r.collector
-        } elseif ($r.collectors) {
-            return $r.collectors
-        } elseif ($r.sources) {
-            return $r.sources
-        } elseif ($r.source) {
-            return $r.source
-        } elseif ($r.apps) {
-            return $r.apps
-        }
-        else {
-            return $r
+
+        if ($r) {
+            #Write-Verbose "`nResponse Content: `n$($response.content)"
+            Write-Verbose "return object type: $($r.GetType().BaseType.name)"
+            # often there is an embedded data object
+            If ($r.GetType().BaseType.name -match "Array") { 
+                return $r
+            } elseif ($r.data) { 
+                return $r.data 
+            } elseif ($r.collector) {
+                return $r.collector
+            } elseif ($r.collectors) {
+                return $r.collectors
+            } elseif ($r.sources) {
+                return $r.sources
+            } elseif ($r.source) {
+                return $r.source
+            } elseif ($r.apps) {
+                return $r.apps
+            }
+            else {
+                return $r
+            }
+        } else {
+            Write-Verbose "null content object"
+            return @()
         }
     }
     
