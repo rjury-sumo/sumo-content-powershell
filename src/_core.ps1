@@ -128,12 +128,13 @@ function getQueryString([hashtable]$form) {
         
     .SYNOPSIS
     Simplifies making calls to the sumologic content api.
+    By default returns the .Content object converted from JSON
     
     .PARAMETER path
     Path to be appended to 'https://endpoint/api/v2'
     
     .PARAMETER session
-    Specify a session. 
+    Specify a session. Defaults to global sumo_session object from last New-ContentSession call.
     
     .PARAMETER method
     HTTP method default GET
@@ -142,7 +143,10 @@ function getQueryString([hashtable]$form) {
     hashtable query params (optional)
     
     .PARAMETER body
-    body - encode as json string first.
+    body. You can pass either an object or a string of JSON.
+
+    .PARAMETER returnResponse
+    boolean - if set to true will return the whole response object rather than .Content converted to JSON
 
     .EXAMPLE
     invoke-sumo -path "content/folders/personal"
@@ -162,7 +166,8 @@ function invoke-sumo {
         [parameter()][Hashtable] $params,
         [parameter()]$body,
         [parameter()][string] $v = "v2",
-        [parameter()][Hashtable] $headers
+        [parameter()][Hashtable] $headers,
+        [parameter()][bool]$returnResponse = $false
     )
 
     if ($session -and $session.endpoint) { 
@@ -194,33 +199,46 @@ function invoke-sumo {
                 }
             }
             write-verbose "body: `n$body"
-            $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers -Body $body).Content | convertfrom-json -Depth 100
+            $response = Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers -Body $body
     
         }
         else {
-            $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers  ).Content | convertfrom-json -Depth 10
+            $response = Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers 
         }
     }
     else {
         Write-Error "you must supply a valid session object to invoke-sumo"
     }
-    # often there is an embedded data object
-    if ($r.data) { 
-        return $r.data 
-    } elseif ($r.collector) {
-        return $r.collector
-    } elseif ($r.collectors) {
-        return $r.collectors
-    } elseif ($r.sources) {
-        return $r.sources
-    } elseif ($r.source) {
-        return $r.source
-    } elseif ($r.apps) {
-        return $r.apps
+
+    Write-Verbose ($response | Out-String)
+
+    if ($returnResponse) {
+        return $response
+    } else {
+        $r = $response.content | ConvertFrom-Json -Depth 100
+        #Write-Verbose "`nResponse Content: `n$($response.content)"
+        Write-Verbose "return object type: $($r.GetType().BaseType.name)"
+        # often there is an embedded data object
+        If ($r.GetType().BaseType.name -match "Array") { 
+            return $r
+        } elseif ($r.data) { 
+            return $r.data 
+        } elseif ($r.collector) {
+            return $r.collector
+        } elseif ($r.collectors) {
+            return $r.collectors
+        } elseif ($r.sources) {
+            return $r.sources
+        } elseif ($r.source) {
+            return $r.source
+        } elseif ($r.apps) {
+            return $r.apps
+        }
+        else {
+            return $r
+        }
     }
-    else {
-        return $r
-    }
+    
 }
 
 <#
@@ -313,3 +331,4 @@ function New-MultipartBoundary {
     ) -join $LF
     return (@{ "multipartBody" = $bodyLines; "boundary" =  $boundary})
  }
+
