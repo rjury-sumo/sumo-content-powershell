@@ -1,0 +1,32 @@
+{
+    "id": "string",
+    "name": "string",
+    "description": "string",
+    "version": 0,
+    "createdAt": "2020-11-22T23:16:52Z",
+    "createdBy": "string",
+    "modifiedAt": "2020-11-22T23:16:52Z",
+    "modifiedBy": "string",
+    "parentId": "string",
+    "contentType": "string",
+    "type": "string",
+    "isSystem": true,
+    "isMutable": true,
+    "children": [
+      {
+        "id": "string",
+        "name": "string",
+        "description": "string",
+        "version": 0,
+        "createdAt": "2020-11-22T23:16:52Z",
+        "createdBy": "string",
+        "modifiedAt": "2020-11-22T23:16:52Z",
+        "modifiedBy": "string",
+        "parentId": "string",
+        "contentType": "string",
+        "type": "string",
+        "isSystem": true,
+        "isMutable": true
+      }
+    ]
+  }

@@ -1,0 +1,51 @@
+{
+    "name": "string",
+    "description": "",
+    "version": 0,
+    "type": "string",
+    "monitorType": "Logs",
+    "queries": [
+      {
+        "rowId": "A",
+        "query": "_sourceCategory=search error"
+      }
+    ],
+    "triggers": [
+      {
+        "detectionMethod": "StaticCondition",
+        "timeRange": "15m",
+        "triggerType": "Critical",
+        "threshold": 50,
+        "thresholdType": "GreaterThanOrEqual",
+        "occurrenceType": "ResultCount",
+        "triggerSource": "AllResults"
+      }
+    ],
+    "notifications": [
+      {
+        "notification": {
+          "connectionType": "Slack",
+          "connectionId": "0000000000000005"
+        },
+        "runForTriggerTypes": [
+          "Critical"
+        ]
+      },
+      {
+        "notification": {
+          "connectionType": "Email",
+          "messageBody": "Alert Triggered!",
+          "recipients": [
+            "john@doe.com"
+          ],
+          "subject": "Monitor Alert: {{TriggerType}} on {{SearchName}}",
+          "timeZone": "America/Los_Angeles"
+        },
+        "runForTriggerTypes": [
+          "Critical"
+        ]
+      }
+    ],
+    "isDisabled": false,
+    "groupNotifications": true
+  }
