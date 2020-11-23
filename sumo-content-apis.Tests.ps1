@@ -36,6 +36,10 @@ Describe "sumo-content-apis-tests" {
         It "websession"  {
             $sumo.WebSession.gettype().name | Should -Be 'WebRequestSession'
         }
+
+        It "websesssion has valid personal folder property" {
+            $sumo.PersonalFolderId | Should -Match '^[0-9A-F]{16}$'
+        }
     }
 
     Context "functions" -tag "functions" {

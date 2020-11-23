@@ -29,16 +29,18 @@
 try { [SumoAPISession] | Out-Null } catch { Add-Type -TypeDefinition  @"
 public class SumoAPISession
 {
-    public SumoAPISession(string Endpoint, object WebSession, string Name, string isAdminMode) {
+    public SumoAPISession(string Endpoint, object WebSession, string Name, string isAdminMode, string PersonalFolderId) {
         this.Endpoint = Endpoint;
         this.WebSession = WebSession;
         this.Name = Name;
         this.isAdminMode = isAdminMode;
+        this.PersonalFolderId = PersonalFolderId;
     }
     public string Endpoint;
     public object WebSession;
     public string Name;
     public string isAdminMode;
+    public string PersonalFolderId;
 }
 "@ 
 }
@@ -104,7 +106,7 @@ function new-ContentSession() {
     $res = Invoke-WebRequest -Uri $uri -method Get -Credential $Credential -SessionVariable webSession
     if ($res) {
         # export the default session object to shell
-        $Script:sumo_session = [SumoAPISession]::new($endpoint, $webSession, $name, $isAdminMode)
+        $Script:sumo_session = [SumoAPISession]::new($endpoint, $webSession, $name, $isAdminMode, ($res.Content | convertfrom-json -depth 10).id)
         return $sumo_session
     }
     else {
