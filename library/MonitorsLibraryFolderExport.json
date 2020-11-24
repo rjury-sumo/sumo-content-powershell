@@ -1,0 +1,12 @@
+{
+    "name": "string",
+    "description": "string",
+    "type": "string",
+    "children": [
+      {
+        "name": "string",
+        "description": "string",
+        "type": "string"
+      }
+    ]
+  }
