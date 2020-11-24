@@ -278,7 +278,7 @@ function start-ContentImportJob {
         [parameter(Mandatory = $false)][string] $overwrite = $false
 
     )
-    return @{'folderId' = $id; 'jobId' = (invoke-sumo -path "content/folders/$folderId/import" -method 'POST' -session $sumo_session -Body $contentJSON -params @{ 'overwrite' = $overwrite ; }).id } 
+    return @{'folderId' = $folderId; 'jobId' = (invoke-sumo -path "content/folders/$folderId/import" -method 'POST' -session $sumo_session -Body $contentJSON -params @{ 'overwrite' = $overwrite ; }).id } 
 }
 
 <#
