@@ -201,18 +201,30 @@ function invoke-sumo {
                 }
             }
             write-verbose "body: `n$body"
-            $response = Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers -Body $body
+            $response = Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers -Body $body -SkipHttpErrorCheck
     
         }
         else {
-            $response = Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers 
+            $response = Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers -SkipHttpErrorCheck
         }
     }
     else {
         Write-Error "you must supply a valid session object to invoke-sumo"
+        break
     }
 
     Write-Verbose ($response | Out-String)
+
+    if ($response.statuscode -gt 0 ) {
+        if ($response.statuscode -gt 399) {
+            Write-Error "invoke-sumo $uri returned: $($response.statuscode) $($response.content)"
+            return $response
+        }
+
+    } else {
+        Write-Error "invoke-sumo $uri request failed"
+        return @()
+    }
 
     if ($returnResponse) {
         return $response
