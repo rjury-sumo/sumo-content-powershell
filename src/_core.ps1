@@ -352,3 +352,14 @@ function New-MultipartBoundary {
     return (@{ "multipartBody" = $bodyLines; "boundary" =  $boundary})
  }
 
+# returns the index of an array using name pattern for a list of objects or hashes.
+ function getArrayIndex ($array,$namePattern) {
+    $i = -1
+    foreach ($element in $array) { 
+        $i = $i + 1
+        If ($element.name -match $namePattern) {
+            return $i
+        }
+    }
+    return -1
+ }
