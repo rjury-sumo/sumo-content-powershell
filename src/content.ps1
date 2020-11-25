@@ -275,7 +275,7 @@ function start-ContentImportJob {
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter(Mandatory = $true)][string] $folderId ,
         [parameter(Mandatory = $true)] $contentJSON ,
-        [parameter(Mandatory = $false)][string] $overwrite = $false
+        [parameter(Mandatory = $false)][string] $overwrite = 'false'
 
     )
     return @{'folderId' = $folderId; 'jobId' = (invoke-sumo -path "content/folders/$folderId/import" -method 'POST' -session $sumo_session -Body $contentJSON -params @{ 'overwrite' = $overwrite ; }).id } 
@@ -283,33 +283,31 @@ function start-ContentImportJob {
 
 <#
     .DESCRIPTION
-    Get status of a content import job
-
-    .PARAMETER folderId
-    content id
-
-    .PARAMETER jobId
-    import job id
+    /v2/content/folders/{folderId}/import/{jobId}/status,get
 
     .PARAMETER sumo_session
     Specify a session, defaults to $sumo_session
 
-    .EXAMPLE
-    get-contentimportJobStatus -jobId '4EA1C8F29371B157' -folderId '0000000000AB8526'
+    .PARAMETER folderId
+    folderId for get
+
+    .PARAMETER jobId
+    jobId for get
 
     .OUTPUTS
-    PSCustomObject. Job status, including 'status' field
-
+    PSCustomObject.
 #>
-function get-ContentimportJobStatus {
-    Param(
-        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(Mandatory = $true)][string] $jobId,
-        [parameter(Mandatory = $true)][string] $folderId
 
-    )
-    return invoke-sumo -path "content/$folderId/import/$jobId/status" -method 'GET' -session $sumo_session
-}
+
+function Get-ContentFoldersImportStatusById {
+
+    Param(
+         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+         [parameter(mandatory=$True)]$folderId,
+         [parameter(mandatory=$True)]$jobId
+     )
+     return (invoke-sumo -path "content/folders/$folderId/import/$jobId/status" -method GET -session $sumo_session -v 'v2')
+ }
 
 <#
     .DESCRIPTION
