@@ -28,11 +28,26 @@ function Get-Partitions {
      .PARAMETER sumo_session
      Specify a session, defaults to $sumo_session
  
-     .PARAMETER body
-     PSCustomObject body for post
+     .PARAMETER name
+     The name of the partition.
+
+     .PARAMETER routingExpression
+     The query that defines the data to be included in the partition.
+
+     .PARAMETER analyticsTier
+     optional: 'frequent','infrequent','continuous','security', default continuous
+
+    .PARAMETER retentionPeriod
+    optional int days
+
+    .PARAMETER dataForwardingId
+    An optional ID of a data forwarding configuration to be used by the partition.
  
+    .PARAMETER dryrun
+    boolean - set to true to output the parition definition as JSON rather that post to sumo.
+
      .OUTPUTS
-     PSCustomObject.
+     PSCustomObject or json (if dryrun)
  #>
  
  
@@ -40,9 +55,32 @@ function Get-Partitions {
  
     Param(
          [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-         [parameter(mandatory=$True)]$body
+         [parameter(mandatory=$True)][string]$name,
+         [parameter(mandatory=$True)][string]$routingExpression,
+         [parameter(mandatory=$false)][string][ValidateSet('frequent','infrequent','continuous','security')]$analyticsTier = 'continuous',
+         [parameter(mandatory=$false)][int]$retentionPeriod,
+         [parameter(mandatory=$false)][string]$dataForwardingId,
+         [parameter(mandatory=$false)][bool]$dryrun=$false
+
      )
-     return (invoke-sumo -path "partitions" -method POST -session $sumo_session -v 'v1' -body $body )
+
+     $partition = '{  "name": "apache", "routingExpression": "_sourcecategory=*/Apache", "analyticsTier": "continuous" }' | convertfrom-json -depth 10
+     $partition.name = $name
+     $partition.routingExpression = $routingExpression
+     $partition.analyticsTier = $analyticsTier
+     if ($retentionPeriod) {
+       $partition | Add-Member -NotePropertyName retentionPeriod -NotePropertyValue $retentionPeriod
+     }
+
+     if ($dataForwardingId) {
+        $partition | Add-Member -NotePropertyName dataForwardingId -NotePropertyValue $dataForwardingId
+      }
+
+    # isCompliant is not supported yet as it's a restricted feature.
+      if ($dryrun) { return ($partition | convertto-json)} else {
+
+          return (invoke-sumo -path "partitions" -method POST -session $sumo_session -v 'v1' -body $partition )
+      }
  }
  
  <#
@@ -143,14 +181,13 @@ function Get-Partitions {
  #>
  
  
- function New-PartitionDecommissionById {
+ function Set-PartitionDecommissionById {
  
     Param(
          [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-         [parameter(mandatory=$True)]$id,
-         [parameter(mandatory=$True)]$body
+         [parameter(mandatory=$True)]$id
      )
-     return (invoke-sumo -path "partitions/$id/decommission" -method POST -session $sumo_session -v 'v1' -body $body )
+     return (invoke-sumo -path "partitions/$id/decommission" -method POST -session $sumo_session -v 'v1' )
  }
  
  

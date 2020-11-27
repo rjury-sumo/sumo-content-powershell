@@ -1,0 +1,8 @@
+{
+    "name": "apache",
+    "routingExpression": "_sourcecategory=*/Apache",
+    "dataForwardingId": "string",
+    "analyticsTier": "continuous",
+    "retentionPeriod": 365,
+    "isCompliant": false
+  }
