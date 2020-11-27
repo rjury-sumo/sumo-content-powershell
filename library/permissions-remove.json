@@ -1,0 +1,12 @@
+{
+    "contentPermissionAssignments": [
+      {
+        "permissionName": "string",
+        "sourceType": "role",
+        "sourceId": "string",
+        "contentId": "string"
+      }
+    ],
+    "notifyRecipients": true,
+    "notificationMessage": "string"
+  }
