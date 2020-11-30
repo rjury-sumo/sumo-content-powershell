@@ -1,0 +1,9 @@
+{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "johndoe@acme.com",
+    "roleIds": [
+      "00000000000001DF",
+      "00000000000002D2"
+    ]
+  }

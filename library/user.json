@@ -1,0 +1,18 @@
+{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "johndoe@acme.com",
+    "roleIds": [
+      "00000000000001DF",
+      "00000000000002D2"
+    ],
+    "createdAt": "2020-11-30T02:30:35Z",
+    "createdBy": "0000000006743FDD",
+    "modifiedAt": "2020-11-30T02:30:35Z",
+    "modifiedBy": "0000000006743FE8",
+    "id": "000000000FE20FE2",
+    "isActive": true,
+    "isLocked": false,
+    "isMfaEnabled": false,
+    "lastLoginTimestamp": "2020-11-30T02:30:35Z"
+  }
