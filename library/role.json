@@ -1,0 +1,27 @@
+{
+    "data": [
+      {
+        "name": "DataAdmin",
+        "description": "Manage data of the org.",
+        "filterPredicate": "!_sourceCategory=billing",
+        "users": [
+          "0000000006743FE0",
+          "0000000005FCE0EE"
+        ],
+        "capabilities": [
+          "manageContent",
+          "manageDataVolumeFeed",
+          "manageFieldExtractionRules",
+          "manageS3DataForwarding"
+        ],
+        "autofillDependencies": true,
+        "createdAt": "2020-11-30T02:30:35Z",
+        "createdBy": "0000000006743FDD",
+        "modifiedAt": "2020-11-30T02:30:35Z",
+        "modifiedBy": "0000000006743FE8",
+        "id": "0000000000E20FE3",
+        "systemDefined": false
+      }
+    ],
+    "next": "GDCiRv4vebF3UWFJQ1kySXBOR3Bzh69GR0RyWm9vCtc"
+  }

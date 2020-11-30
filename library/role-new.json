@@ -1,0 +1,16 @@
+{
+    "name": "DataAdmin",
+    "description": "Manage data of the org.",
+    "filterPredicate": "!_sourceCategory=billing",
+    "users": [
+      "0000000006743FE0",
+      "0000000005FCE0EE"
+    ],
+    "capabilities": [
+      "manageContent",
+      "manageDataVolumeFeed",
+      "manageFieldExtractionRules",
+      "manageS3DataForwarding"
+    ],
+    "autofillDependencies": true
+  }
