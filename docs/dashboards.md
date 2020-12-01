@@ -45,3 +45,21 @@ Get-DashboardById -id ABCDEFdjZozne6odId5iT8uONiSHtITxRCbhsXNEJ3mtvUxcChTdRHCaIQ
 
 # create and modify
 Use the new-dasboard and Set-DashboardById passing the body in format from get-dashbaord.
+
+Remember to set the folderId property to the new parent folder.
+
+example new from existing.
+```
+$dash = Get-DashboardById -id rAFruP2IBelGE7cNNhUbyVEyOl8VXgflvI7H1kSQ1gLZwW6Xer3bmRghGthI -sumo_session $syd
+$dash.folderId = (get-PersonalFolder -sumo_session $be).id  
+$dash.PSObject.Properties.Remove('id') 
+New-Dashboard -body $dash -sumo_session $be  
+```
+
+example update where exists in both.
+```
+$dash = Get-DashboardById -id QN90YWcYg1yM8aC9A2dH2LM45oNWCItSh1LiEeD7ba9ekPMCbAgcqB1JjdTj -sumo_session $be  
+$dash.folderId = (get-PersonalFolder -sumo_session $syd).id 
+$dash.PSObject.Properties.Remove('id') 
+Set-DashboardById -id rAFruP2IBelGE7cNNhUbyVEyOl8VXgflvI7H1kSQ1gLZwW6Xer3bmRghGthI -body $dash -sumo_session $syd  
+```
