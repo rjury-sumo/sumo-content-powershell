@@ -63,3 +63,13 @@ $dash.folderId = (get-PersonalFolder -sumo_session $syd).id
 $dash.PSObject.Properties.Remove('id') 
 Set-DashboardById -id rAFruP2IBelGE7cNNhUbyVEyOl8VXgflvI7H1kSQ1gLZwW6Xer3bmRghGthI -body $dash -sumo_session $syd  
 ```
+
+# Replacing query text with a regular exprssion
+Often there is a use case to export a dashboard, make a replacement in all panels using a text patten then import the updated version (either in place or as a new dashboard).
+This function replaces text matching a regular expression in each panel of a dashboard with a string and returns a new object.
+The replace function is used so matching groups are also possible such as effectively ```-replace '.*(\w+)\.','$1'```
+
+```
+$d2 = Edit-DashboardPanelQueries -dashboard $dash -pattern 'foo' -replacewith 'bar' 
+```
+This new dashboard we could post using the new dashboard framework or import as a content item in the content api.

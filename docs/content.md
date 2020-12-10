@@ -56,3 +56,30 @@ $to_folder=(get-PersonalFolder -sumo_session $live).children | where {$_.name -m
 get-ExportContent -id $from_folder.id -sumo_session $dev |  ConvertTo-Json -Depth 100 | Out-File -FilePath ./data/export.json
 start-ContentImportJob -folderId $to_folder.id -contentJSON (gc -Path ./data/export.json -Raw) -overwrite 'true' -sumo_session $live
 ```
+
+# Exporting specific content from a folder
+
+We can export all content from a folder in say the personal folder, locating it by it's name property.
+
+```
+$tf=(get-PersonalFolder).children | where {$_.name -eq 'tf'}
+
+get-ExportContent -id $tf.id | convertto-json -depth 100 | out-file -FilePath ./dash-old/tf.solution.json
+```
+
+It's also posssible to locate specific content in a folder in the children list, then use that id to export specific content items.
+
+getArrayIndex is a custom function to return an item from a list of hash/ custom objects using a name pattern vs a specific property.
+
+```
+# get folder by id so we get the children list.
+$tf_folder = Get-ContentFolderById -id $tf.id
+
+# search the children and locate the element by name property
+$example = getArrayIndex $tf_folder.children '^Example Dashboard$'
+
+# example includes basic properties like name and id but not content.
+# run an export job for just the child item.
+get-ExportContent -id ($tf_folder.children[$example]).id| convertto-json -depth 100 | out-file "./example_$(($tf_folder.children[$example]).id).json"
+
+```
