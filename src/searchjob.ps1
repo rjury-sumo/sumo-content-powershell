@@ -1,4 +1,4 @@
-# this is a modified version of the code in sumologic powershell sdk.0
+# an alternative to the sumologic powerhshell sdk start-searchjob
 
 Function get-epochDate ($epochDate) { [timezone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($epochDate)) }
 
@@ -179,7 +179,7 @@ function New-SearchJobQuery {
 
 <#
 .SYNOPSIS
-Start a search job, we have a special name to avoid collission with sumologic sdk command.
+Start a search job, not to be confused with start-searchjob in powershell sdk
 
 .DESCRIPTION
 Start a search job with just a compliant body object.
@@ -191,7 +191,7 @@ Specify a session, defaults to $sumo_session
 PSObject for the search job which as id and link properties.
 
 #>
-function Start-SearchJobBasic {
+function New-SearchJob {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter(Mandatory = $true)] $body
