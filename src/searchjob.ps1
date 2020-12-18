@@ -200,3 +200,122 @@ function New-SearchJob {
     return (invoke-sumo -path "search/jobs" -method 'POST' -session $sumo_session  -body $body -v 'v1')
 }
 
+function get-SearchJobStatus {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter(Mandatory = $true)][string] $jobId
+
+    )
+    return invoke-sumo -path "search/jobs/$jobId" -method 'GET' -session $sumo_session -v 'v1'
+}
+
+
+function Export-SearchJobEvents {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter(Mandatory = $true)] $job, 
+        [parameter(Mandatory = $false)][string]  [ValidateSet("records","messages")] $return = "records",
+        [parameter(Mandatory = $false)][int] $limit = 1000
+
+    )
+
+        if ($job.jobid -and ($job.PSobject.Properties.name -match "messageCount") -and ($job.PSobject.Properties.name -match "recordCount") ) {
+
+        } else { 
+            Write-Error "passed -job object is missing required properties"
+            return @()
+    }
+
+    $offset=0
+
+    if ($return -eq "records") {
+        $totalresults = $job.recordCount
+    } elseif ($return -eq "messages") {
+        $totalresults = $job.messageCount
+    }
+    $remaining = $totalresults
+    $resultSet = '{  "fields":[],  "records":[] , "messages": [] }' | ConvertFrom-Json
+
+    While ($totalresults -gt 0 -and $remaining -gt 0) {
+        $params = @{
+            "offset" = $offset
+            "limit" = $limit
+        }
+        # get the page
+        $page =  (invoke-sumo -path "search/jobs/$($job.jobid)/$return" -method 'GET' -session $sumo_session   -v 'v1' -params $params)
+
+        $resultSet.fields = $page.fields
+        $resultSet.$return = $resultSet.$return + $page.$return
+
+        $remaining = $remaining - $offset
+        $offset = $offset + $limit
+    }
+
+    return $resultSet
+}
+
+function get-SearchJobResult {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter(Mandatory = $false)] $query, # query object from New-SearchQuery -dryrun
+        [parameter(Mandatory = $false)] $query, # query object from New-SearchQuery -dryrun
+        [parameter(Mandatory = $false)] $jobid, # query object from New-SearchQuery -dryrun
+        [parameter(Mandatory = $false)][int] $poll_secs = 1,
+        [parameter(Mandatory = $false)][int] $max_tries = 60,
+        [parameter(Mandatory = $false)][string]  [ValidateSet("status","records","messages")] $return = "status"
+
+    )
+
+    if ($jobid) {
+        Write-Verbose 'run by job id'
+
+    }  elseif ($query ) {
+        Write-Verbose 'run by query'
+        Write-Verbose "query: `n$($query | convertto-json -depth 10) `n"
+        $job = New-SearchJob -body $query -sumo_session $sumo_session
+        $jobid=$job.id
+    } else {
+        Write-Error 'you must provide a new -query object or -jobid of an existing job.'
+    }
+    
+    $tries = 0
+    $last = "none"
+
+    While ($jobid -and ($max_tries -gt $tries)) {
+        $tries = $tries + 1     
+        Write-Verbose "polling job $jobid. try: $tries of $max_tries"
+        
+        $job_state = get-SearchJobStatus -jobId $jobid -sumo_session $sumo_session
+        if ($last -ne $job_state.state) {
+            write-host "change status: from: $last to $($job_state.state) at $($tries * $poll_seconds) seconds."
+            $last = "$($job_state.state)"
+        } else {
+            Write-Verbose  ($job_state.state)
+        }
+
+        if ($job_state.state -eq 'DONE GATHERING RESULTS') {
+            
+            break
+        }
+        else {
+            Start-Sleep -Seconds $poll_secs
+        }
+
+        # add the jobid 
+        
+    }   
+    Write-Verbose "job poll completed: status: $($job_state.state) jobId: $jobid"
+    if ($job_state.state -ne 'DONE GATHERING RESULTS') {
+         Write-Error "Job failed or timed out for job: $jobid"; 
+         return 
+    }
+    $job_state  | Add-Member -NotePropertyName jobId -NotePropertyValue $jobid
+
+    if ($return -eq "messages" ) {
+        $job_state | Add-Member -NotePropertyName results -NotePropertyValue (Export-SearchJobEvents -job $job_state -return 'messages')
+    } elseif ($return -eq "records") {
+        $job_state | Add-Member -NotePropertyName results -NotePropertyValue (Export-SearchJobEvents -job $job_state -return 'records')
+    }
+
+    return  $job_state
+}
