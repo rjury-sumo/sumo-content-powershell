@@ -258,7 +258,6 @@ function get-SearchJobResult {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter(Mandatory = $false)] $query, # query object from New-SearchQuery -dryrun
-        [parameter(Mandatory = $false)] $query, # query object from New-SearchQuery -dryrun
         [parameter(Mandatory = $false)] $jobid, # query object from New-SearchQuery -dryrun
         [parameter(Mandatory = $false)][int] $poll_secs = 1,
         [parameter(Mandatory = $false)][int] $max_tries = 60,
