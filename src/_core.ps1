@@ -363,3 +363,49 @@ function New-MultipartBoundary {
     }
     return -1
  }
+
+
+<#
+    .DESCRIPTION
+    Sometimes it's handy to convert something to jaon and replace all occurrences of pattern A with string B
+    That is what this function does.
+
+    .PARAMETER in
+    source string or PS Object. This will be converted to JSON before running substitutions.
+
+    .PARAMETER substitutions
+    an array of substitution hashes. Each hash should have a replace and with key.
+    replace is the regular expression to match the replace text
+    with is the string to substitute for the matching pattern.
+
+    .EXAMPLE
+    replace both foo with bar and red with blue in the object.
+    batchReplace -in 'foo bar i have a red apple' -substitutions @(@{'replace'='foo';'with'='bar'},@{'replace'='red';'with'='blue'};)
+    
+    .OUTPUTS
+    PSCustomObject.
+#>
+
+function batchReplace {
+    param (
+        [Parameter(Mandatory = $true)] $in,
+        [Parameter(Mandatory = $true)][array]$substitutions
+    )
+    
+    $json = $in | convertto-json -depth 100
+    foreach ($sub in $substitutions) {
+        if (-not $sub.contains('replace'))  { 
+            Write-Error "sub object missing replace in $($sub | out-string)"
+            return $in
+        }
+        if (-not $sub.contains('with'))  { 
+            Write-Error "sub object missing with in $($sub | out-string)"
+            return $in
+        }
+
+        $json = $json -replace $sub['replace'],$sub['with']
+    }
+
+    $out = $json | ConvertFrom-Json -Depth 100
+    return $out
+ }

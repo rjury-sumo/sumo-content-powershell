@@ -91,14 +91,22 @@ if set to true function returns the query object that wouuld be submitted as -bo
 .PARAMETER sumo_session
 Specify a session, defaults to $sumo_session
 
+.PARAMETER substitutions
+an array of substitution hashes for parameterized queries. Each hash should have a replace and with key.
+Each sub is replaced in the query text block.
+Note the substitution is vs a json-ified version of the query object.
+replace: is the regular expression to match the replace text
+with: is the string to substitute for the matching pattern.
+-substitutions @(@{'replace'='foo';'with'='bar'},@{'replace'='red';'with'='blue'};)
+
 .EXAMPLE
-New-SearchJobQuery -query 'error' -last '-5m' -sumo_session $be 
+New-SearchQuery -query 'error' -last '-5m' -sumo_session $be 
 
 .OUTPUTS
 PSObject for the search job which as id and link properties.
 
 #>
-function New-SearchJobQuery {
+function New-SearchQuery {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter()][bigint]$from,
@@ -109,7 +117,9 @@ function New-SearchJobQuery {
         [parameter()][string]$timeZone = 'UTC',
         [parameter()][string]$byReceiptTime = 'False',
         [parameter()][string]$autoParsingMode = 'performance',
-        [parameter(mandatory = $false)][bool]$dryrun = $false
+        [parameter(mandatory = $false)][bool]$dryrun = $false,
+        [Parameter(Mandatory = $false)][array]$substitutions
+
 
     )
 
@@ -117,7 +127,6 @@ function New-SearchJobQuery {
 
     # we must have a valid query
     if ($query) {
-        
     }
     elseif ($file) {
         $query = Get-Content -Path $file -Raw
@@ -125,6 +134,11 @@ function New-SearchJobQuery {
     else {
         Write-Error "New-SearchJob requires either -query or -file"
         return $null
+    }
+
+    if ($substitutions) {
+        Write-Verbose 'activating substitutions'
+        $query = batchReplace -in $query -substitutions $substitutions
     }
 
     if ($last) { 
