@@ -1,7 +1,8 @@
 # an alternative to the sumologic powerhshell sdk start-searchjob
 
-Function get-epochDate ($epochDate) { [timezone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($epochDate)) }
-
+Function get-epochDate ($epochDate) { 
+    [timezone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($epochDate)) 
+}
 
 # note we return 1s 10 digit epoc times (not ms epcotimes)
 function sumotime([string]$time) {
@@ -179,13 +180,16 @@ function New-SearchJobQuery {
 
 <#
 .SYNOPSIS
-Start a search job, not to be confused with start-searchjob in powershell sdk
+Start a search job using a body object, not to be confused with start-searchjob in powershell sdk
 
 .DESCRIPTION
 Start a search job with just a compliant body object.
 
 .PARAMETER sumo_session
 Specify a session, defaults to $sumo_session
+
+.PARAMETER body
+search job query body as per api spec, or produced with new-searchjobquery -dryrun $true
 
 .OUTPUTS
 PSObject for the search job which as id and link properties.
@@ -200,16 +204,58 @@ function New-SearchJob {
     return (invoke-sumo -path "search/jobs" -method 'POST' -session $sumo_session  -body $body -v 'v1')
 }
 
+<#
+.SYNOPSIS
+call job status api 
+
+.DESCRIPTION
+call job status api for job id
+
+.PARAMETER sumo_session
+Specify a session, defaults to $sumo_session
+
+.PARAMETER jobid
+job id
+
+.OUTPUTS
+PSObject for the search job which as id and link properties.
+
+#>
 function get-SearchJobStatus {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter(Mandatory = $true)][string] $jobId
 
     )
-    return invoke-sumo -path "search/jobs/$jobId" -method 'GET' -session $sumo_session -v 'v1'
+    $j = invoke-sumo -path "search/jobs/$jobId" -method 'GET' -session $sumo_session -v 'v1'
+    $j | Add-Member -NotePropertyName id -NotePropertyValue $jobId
+
+    return $j
 }
 
+<#
+.SYNOPSIS
+export the records or messages from an search job that has finished.
 
+.DESCRIPTION
+get results of a search job.
+
+.PARAMETER sumo_session
+Specify a session, defaults to $sumo_session
+
+.PARAMETER job
+A job object from a previous search result that has an id property.
+
+.PARAMETER  return
+type of result to return in object from records or messages. defaults to records.
+
+.PARAMETER limit
+page size to poll results, defaults to 1000
+
+.OUTPUTS
+PSObject for the search job which as id and link properties.
+
+#>
 function Export-SearchJobEvents {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
@@ -219,7 +265,7 @@ function Export-SearchJobEvents {
 
     )
 
-        if ($job.jobid -and ($job.PSobject.Properties.name -match "messageCount") -and ($job.PSobject.Properties.name -match "recordCount") ) {
+        if ($job.id -and ($job.PSobject.Properties.name -match "messageCount") -and ($job.PSobject.Properties.name -match "recordCount") ) {
 
         } else { 
             Write-Error "passed -job object is missing required properties"
@@ -242,7 +288,7 @@ function Export-SearchJobEvents {
             "limit" = $limit
         }
         # get the page
-        $page =  (invoke-sumo -path "search/jobs/$($job.jobid)/$return" -method 'GET' -session $sumo_session   -v 'v1' -params $params)
+        $page =  (invoke-sumo -path "search/jobs/$($job.id)/$return" -method 'GET' -session $sumo_session   -v 'v1' -params $params)
 
         $resultSet.fields = $page.fields
         $resultSet.$return = $resultSet.$return + $page.$return
@@ -254,11 +300,47 @@ function Export-SearchJobEvents {
     return $resultSet
 }
 
+<#
+.SYNOPSIS
+wrapper to poll for completion and return results either from a query or exisitng job.
+
+.DESCRIPTION
+wrapper to poll for completion and return results either from a query or exisitng job.
+
+.PARAMETER sumo_session
+Specify a session, defaults to $sumo_session
+
+.PARAMETER query
+optional query object from New-SearchQuery -dryrun
+
+.PARAMETER jobid
+optional id of an existing job
+
+.PARAMETER job
+optional job object with id of exiting job
+
+.PARAMETER poll_secs
+default 1, the poll interval to check for job completion.
+
+.PARAMETER max_tries
+default 60, the maximumum number of poll cycles to wait for completion
+
+.PARAMETER return
+"status","records","messages"
+status returns on the job result object
+records adds a records property contining the records results pages
+messages adds a messages property containing the messages results pages
+
+.OUTPUTS
+PSObject for the search job which as id. May have records or messages properties.
+
+#>
 function get-SearchJobResult {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter(Mandatory = $false)] $query, # query object from New-SearchQuery -dryrun
-        [parameter(Mandatory = $false)] $jobid, # query object from New-SearchQuery -dryrun
+        [parameter(Mandatory = $false)] $jobid, # job id of an existing completed job
+        [parameter(Mandatory = $false)] $job, # job object
         [parameter(Mandatory = $false)][int] $poll_secs = 1,
         [parameter(Mandatory = $false)][int] $max_tries = 60,
         [parameter(Mandatory = $false)][string]  [ValidateSet("status","records","messages")] $return = "status"
@@ -268,13 +350,21 @@ function get-SearchJobResult {
     if ($jobid) {
         Write-Verbose 'run by job id'
 
+    }  elseif ($job) {
+        Write-Verbose 'run by job object'
+        if ($job.id) {
+            $jobid=$job.id
+        } else { 
+            Write-Error 'job object has no id property';
+            return $job
+        }
     }  elseif ($query ) {
         Write-Verbose 'run by query'
         Write-Verbose "query: `n$($query | convertto-json -depth 10) `n"
         $job = New-SearchJob -body $query -sumo_session $sumo_session
         $jobid=$job.id
     } else {
-        Write-Error 'you must provide a new -query object or -jobid of an existing job.'
+        Write-Error 'you must provide a new -query object or -jobid of an existing job, or a -job object with id.'
     }
     
     $tries = 0
@@ -308,12 +398,12 @@ function get-SearchJobResult {
          Write-Error "Job failed or timed out for job: $jobid"; 
          return 
     }
-    $job_state  | Add-Member -NotePropertyName jobId -NotePropertyValue $jobid
+    $job_state  | Add-Member -NotePropertyName id -NotePropertyValue $jobid -Force
 
     if ($return -eq "messages" ) {
-        $job_state | Add-Member -NotePropertyName results -NotePropertyValue (Export-SearchJobEvents -job $job_state -return 'messages')
+        $job_state | Add-Member -NotePropertyName messages -NotePropertyValue (Export-SearchJobEvents -job $job_state -return 'messages')
     } elseif ($return -eq "records") {
-        $job_state | Add-Member -NotePropertyName results -NotePropertyValue (Export-SearchJobEvents -job $job_state -return 'records')
+        $job_state | Add-Member -NotePropertyName records -NotePropertyValue (Export-SearchJobEvents -job $job_state -return 'records')
     }
 
     return  $job_state
