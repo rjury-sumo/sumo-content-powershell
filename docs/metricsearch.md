@@ -1,11 +1,10 @@
 # Metricsearches
 
-## only works with API created objects which is super wieird
-There is one odd thing about this API that you can only seem to get things you created with it - even though in the UI exisitng and API created metric search objects appear the same in the libaray!
-
+## Getting a list of metric type objects
+We can do this via the content api using itemtype 'Metric'
 For example:
 ```
-(get-PersonalFolder -sumo_session $training).children |  where {$_.itemtype -match 'Metric'}
+(get-PersonalFolder ).children |  where {$_.itemtype -match 'Metric'}
 createdAt   : 11/22/2020 11:23:18 PM
 createdBy   : 0000000000BC774E
 modifiedAt  : 11/22/2020 11:23:18 PM       
@@ -27,19 +26,9 @@ parentId    : 0000000000EDB78E
 permissions : {GrantEdit, View, Edit, GrantView…}
 ```
 
-requesting the manually saved library search fails:
+## get metric search by id
 ```
-Invoke-WebRequest: /Users/rjury/Documents/sumo2020/sumo-content-powershell/src/_core.ps1:201:19
-Line |
- 201 |  …       $r = (Invoke-WebRequest -Uri $uri -method $method -WebSession $ …
-     |    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     | {"id":"DHVFP-HQLYF-19BHI","errors":[{"code":"content:content_not_found","message":"Content with the given ID does not exist."}]}
-
-```
-
-requesting one created via the API works:
-```
-Get-MetricsSearchById -id 00000000011EE063 -sumo_session $training      
+Get-MetricsSearchById -id 00000000011EE063       
 logQuery      : my_metric | timeslice 1m | count by _timeslice
 title                     : Short title
 description               : Long and detailed description 
@@ -55,9 +44,10 @@ parentId      : 0000000000EDB78E
 ```
 
 # Example create metricsearch
+create from example file and save to the personal folder.
 
 ```
 $mq = Get-Content -Path ./library/metricsearch.json | ConvertFrom-Json -Depth 10
-$mq.parentId = (get-PersonalFolder -sumo_session $training).id
-New-MetricsSearch -body $mq -sumo_session $training
+$mq.parentId = (get-PersonalFolder ).id
+New-MetricsSearch -body $mq 
 ```
