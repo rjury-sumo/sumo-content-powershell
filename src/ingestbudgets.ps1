@@ -404,10 +404,9 @@ function Reset-IngestBudgetv2UsageResetById {
  
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(mandatory = $True)]$id,
-        [parameter(mandatory = $True)]$body
+        [parameter(mandatory = $True)]$id
     )
-    return (invoke-sumo -path "ingestBudgets/$id/usage/reset" -method POST -session $sumo_session -v 'v2' -body $body )
+    return (invoke-sumo -path "ingestBudgets/$id/usage/reset" -method POST -session $sumo_session -v 'v2'  )
 }
  
  

@@ -1,10 +1,10 @@
 {
-    "name": "Developer Budget",
-    "scope": "_sourceCategory=*prod*nginx*",
-    "capacityBytes": 1000,
-    "timezone": "America/Los_Angeles",
-    "resetTime": 1410,
-    "description": "string",
-    "action": "stopCollecting",
-    "auditThreshold": 85
-  }
+  "name": "Developer Budget",
+  "scope": "_sourceCategory=*prod*nginx*",
+  "capacityBytes": 100000,
+  "timezone": "America/Los_Angeles",
+  "resetTime": "12:34",
+  "description": "string",
+  "action": "stopCollecting",
+  "auditThreshold": 85
+}
