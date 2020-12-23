@@ -202,9 +202,9 @@ function Remove-IngestBudgetv1CollectorsById {
  
      .PARAMETER collectorId
      collectorId for put
- 
-     .PARAMETER body
-     PSCustomObject body for put
+
+     .EXAMPLE
+     Set-IngestBudgetv1CollectorsById -id 0000000000002A13 -collectorId 109028144
  
      .OUTPUTS
      PSCustomObject.
@@ -216,10 +216,10 @@ function Set-IngestBudgetv1CollectorsById {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter(mandatory = $True)]$id,
-        [parameter(mandatory = $True)]$collectorId,
-        [parameter(mandatory = $True)]$body
+        [parameter(mandatory = $True)]$collectorId
     )
-    return (invoke-sumo -path "ingestBudgets/$id/collectors/$collectorId" -method PUT -session $sumo_session -v 'v1' -body $body )
+
+    return (invoke-sumo -path "ingestBudgets/$id/collectors/$collectorId" -method PUT -session $sumo_session -v 'v1' )
 }
  
 <#
@@ -231,10 +231,7 @@ function Set-IngestBudgetv1CollectorsById {
  
      .PARAMETER id
      id for post
- 
-     .PARAMETER body
-     PSCustomObject body for post
- 
+
      .OUTPUTS
      PSCustomObject.
  #>
@@ -244,10 +241,9 @@ function Reset-IngestBudgetv1UsageResetById {
  
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(mandatory = $True)]$id,
-        [parameter(mandatory = $True)]$body
+        [parameter(mandatory = $True)]$id
     )
-    return (invoke-sumo -path "ingestBudgets/$id/usage/reset" -method POST -session $sumo_session -v 'v1' -body $body )
+    return (invoke-sumo -path "ingestBudgets/$id/usage/reset" -method POST -session $sumo_session -v 'v1'  )
 }
  
 <#
