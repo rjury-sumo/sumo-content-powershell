@@ -3,7 +3,7 @@ Import-Module -Name (Get-ChildItem -Filter *psd1 -Recurse ./psm/).FullName
 
 cd /home
 # dot source the code
-foreach ($f in dir ./src/*.ps1) { . $f.fullname }
+foreach ($f in dir ./sumo-content-powershell/*.ps1) { . $f.fullname }
 
 # validate env
 write-host "SUMOLOGIC_API_ENDPOINT is: '$($env:SUMOLOGIC_API_ENDPOINT)'"

@@ -9,7 +9,7 @@ This should do most of the grunt work for creating module code.
 Likely some methods might need fine tuning or custom code.
 
 ### invoke-sumo
-This code assumes you already have the ../src/_core.ps1 functions loaded to be workable.
+This code assumes you already have the ../sumo-content-powershell/_core.ps1 functions loaded to be workable.
 
 ## srcgen.ps1
 This creates the ./src files

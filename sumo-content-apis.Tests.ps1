@@ -1,5 +1,5 @@
 BeforeAll {
-    foreach ($f in dir ./src/*.ps1) { . $f.fullname }
+    foreach ($f in dir ./sumo-content-powershell/*.ps1) { . $f.fullname }
     if ($env:SUMO_ACCESS_ID -notmatch '[a-zA-Z1-9]{14}') { write-error "SUMO_ACCESS_ID or KEY is not set"; exit }
     if ($env:SUMO_ACCESS_KEY -notmatch '[a-zA-Z1-9]{64}') { write-error "SUMO_ACCESS_ID or KEY is not set"; exit }
     $endpoint = 'https://api.au.sumologic.com'
