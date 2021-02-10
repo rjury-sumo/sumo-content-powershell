@@ -1,5 +1,6 @@
 
 #Import-Module -Name (Get-ChildItem -Filter *psd1 -Recurse ./psm/).FullName
+import-module /psm/Pester
 
 cd /home
 Import-Module ./home/sumo-content-powershell/sumo-content-powershell.psd1
