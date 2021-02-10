@@ -17,7 +17,7 @@
     $export_item |  ConvertTo-Json -Depth 100 | Out-File -FilePath ./temp.json -Encoding ascii -Force -ErrorAction Stop
 
     .EXAMPLE
-    Using two sessions s1 and s2. Provide -sumo_session param to commands to specify instance.
+    Two sessions s1 and s2. Provide -sumo_session param to commands to specify instance.
     $s1 =  new-ContentSession -endpoint 'https://api.au.sumologic.com' 
     $s2 =  new-ContentSession -accessid $env:SUMO_ACCESS_ID_BE -accesskey $env:SUMO_ACCESS_KEY_BE  
     $parent_folder = get-PersonalFolder -sumo_session $s1 
@@ -51,7 +51,7 @@ public class SumoAPISession
 
     .PARAMETER endpoint
     API endpoint such as https://api.us2.sumologic.com.
-    defaults to: $env:SUMOLOGIC_API_ENDPOINT
+    defaults to: $env:SUMO_DEPLOYMENT
 
     .PARAMETER accessid
     API endpoint such as https://api.us2.sumologic.com
@@ -77,7 +77,7 @@ public class SumoAPISession
 #>
 function new-ContentSession() {
     Param(
-        [parameter(Mandatory = $false)][string] $endpoint = $env:SUMOLOGIC_API_ENDPOINT,
+        [parameter(Mandatory = $false)][string] $endpoint = $env:SUMO_DEPLOYMENT,
         [parameter(Mandatory = $false)][string] $accessid = $env:SUMO_ACCESS_ID,
         [parameter(Mandatory = $false)][string] $accesskey = $env:SUMO_ACCESS_KEY,
         [parameter(Mandatory = $false)][string] $name = $accessid,
