@@ -16,6 +16,8 @@ RUN mkdir ./psm
 #RUN pwsh -c "Save-Module SumoLogic-Core -Path ./psm -Repository PSGallery"
 RUN pwsh -c "Save-Module Pester -Path ./psm -Repository PSGallery"
 #RUN pwsh -c "Install-Module Pester -Repository PSGallery"
+#RUN pwsh -c "Import-Module ./home/sumo-content-powershell/sumo-content-powershell.psd1"
+
 
 # setup a profile to launch the module import and a connection if session=true
 RUN mkdir -p /root/.config/powershell
