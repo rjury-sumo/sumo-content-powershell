@@ -1,22 +1,13 @@
 # sumo-content-powershell
-powershell commands for interacting with content and folder apis
+powershell commands for interacting with content ,  folder and other APIs.
 
-## src
-theses are the source files to dot source the functions.
-for now it's not a psm just dot source.
-
-## endpoints
-this folder contains some files with sumo api endpoints and automation to bulk generate api code.
+For info on apis that exist and swagger definition see: https://api.au.sumologic.com/docs/#section/Getting-Started
 
 # setup
-right now this is not a true module. 
+You can import the module as below. The only folder you need is the sumo-content-powershell folder.
 
-To use is 'dot source' it in a powershell session to create the functions and sumo data type:
 ```
-foreach ($f in dir ./sumo-content-powershell/*.ps1) { . $f.fullname }
-
-or from root:
-. ./dot.source.ps1
+Import-Module ./src/sumo-content-powershell.psd1
 ```
 
 ## make a new session
@@ -38,8 +29,34 @@ $live = new-ContentSession -endpoint 'us2' -accessid $env:accessidlive -accesske
 # Examples of usage
 See the docs folder.
 
+# included API 
+So far included are followling apis where most endpoints are coded.  Each API has it's own ps.1 code file:
+```
+accesskeys
+apps
+collectors
+connections
+content
+dashboards
+fieldextrationrules
+fields
+folders
+healthevents
+ingestbudgets
+logssearchestimatedusage
+lookuptables
+metricalertmonitors
+metricsearch
+monitors
+partitions
+permissions
+roles
+scheduledviews
+searchjob
+sources
+users
+```
 # Using the docker image
-
 ## custom entry point
 By default a pwsh prompt is the entry point. .
 Then modify the entrypoint e.g
@@ -54,7 +71,6 @@ docker build -t sumologic-content-powershell:latest .
 ```
 
 ## Starting the container
-
 ### windows powershell
 ```
 docker run --env SUMO_DEPLOYMENT=us2 --env SUMO_ACCESS_ID=$Env:SUMO_ACCESS_ID --env SUMO_ACCESS_KEY=$Env:SUMO_
@@ -66,10 +82,30 @@ ACCESS_KEY -it sumologic-content-powershell:latest
 docker run --env SUMO_DEPLOYMENT=au --env SUMO_ACCESS_ID=$SUMO_ACCESS_ID --env SUMO_ACCESS_KEY=$SUMO_ACCESS_KEY -it sumologic-content-powershell:latest
 ```
 
+# Build notes
 # Tests
 both code solutions have a pester test file with some rather incomplete test coverage!
 
+# Endpoints
+This folder contains files with sumo api endpoints and automation to bulk generate api code. This generated code in ./src is the basis for most of the module code.
+
+# module rebuild
+- update *.ps1 code in ./sumo-content-powershell as required
+- (ideally)write some pester tests 
+- ensure tests pass
+- run ./_build.ps1
+- update the manifest file such as version setc. Note:  build.ps1 will output the 'exported functions' arrray for the manifest.
+
 # TODO
-- make it a real module not dot source
-- migrate more api commands from the endpoints/src after validating/testing
-- write more unit test.
+write more tests!
+missing apis such as:
+- archive
+- transformationrules
+- saml
+- servicewhitelist
+- tokens
+- topology (beta)
+- account
+- passwordpolicy
+- dynamicparsing
+- serviceallowlist
