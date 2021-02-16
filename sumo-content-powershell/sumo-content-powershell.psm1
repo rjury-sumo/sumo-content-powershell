@@ -17,7 +17,7 @@
     $export_item |  ConvertTo-Json -Depth 100 | Out-File -FilePath ./temp.json -Encoding ascii -Force -ErrorAction Stop
 
     .EXAMPLE
-    Using two sessions s1 and s2. Provide -sumo_session param to commands to specify instance.
+    Two sessions s1 and s2. Provide -sumo_session param to commands to specify instance.
     $s1 =  new-ContentSession -endpoint 'https://api.au.sumologic.com' 
     $s2 =  new-ContentSession -accessid $env:SUMO_ACCESS_ID_BE -accesskey $env:SUMO_ACCESS_KEY_BE  
     $parent_folder = get-PersonalFolder -sumo_session $s1 
@@ -4933,12 +4933,21 @@ function Get-Users {
 #Export-ModuleMember -Cmdlet new-ContentSession
 #Export-ModuleMember -Function getQueryString
 #Export-ModuleMember -Cmdlet invoke-sumo
+#Export-ModuleMember -Cmdlet will return a new instance of -to object.
 #Export-ModuleMember -Cmdlet copy-proppy
 #Export-ModuleMember -Function convertSumoDecimalContentIdToHexId
 #Export-ModuleMember -Cmdlet New-MultipartBoundary
+#Export-ModuleMember -Cmdlet New-MultipartContent
+#Export-ModuleMember -Function getArrayIndex 
 #Export-ModuleMember -Function batchReplace
 #Export-ModuleMember -Cmdlet Get-AccessKeys
+#Export-ModuleMember -Cmdlet New-AccessKey
+#Export-ModuleMember -Cmdlet Get-AccessKeysPersonal
+#Export-ModuleMember -Cmdlet Remove-AccessKeyById
+#Export-ModuleMember -Cmdlet Set-AccessKeyById
 #Export-ModuleMember -Cmdlet Get-Apps
+#Export-ModuleMember -Cmdlet Get-AppInstallStatusById
+#Export-ModuleMember -Cmdlet Get-AppById
 #Export-ModuleMember -Cmdlet New-AppInstallById
 #Export-ModuleMember -Cmdlet Install-SumoApp
 #Export-ModuleMember -Cmdlet get-collectors
@@ -4946,6 +4955,11 @@ function Get-Users {
 #Export-ModuleMember -Cmdlet get-collectorById
 #Export-ModuleMember -Cmdlet get-collectorByName
 #Export-ModuleMember -Cmdlet Get-Connections
+#Export-ModuleMember -Cmdlet New-Connection
+#Export-ModuleMember -Cmdlet New-ConnectionTest
+#Export-ModuleMember -Cmdlet Remove-ConnectionById
+#Export-ModuleMember -Cmdlet Get-ConnectionById
+#Export-ModuleMember -Cmdlet Set-ConnectionById
 #Export-ModuleMember -Cmdlet get-ContentByPath
 #Export-ModuleMember -Cmdlet get-ContentPath
 #Export-ModuleMember -Cmdlet start-ContentExportJob
@@ -4960,9 +4974,26 @@ function Get-Users {
 #Export-ModuleMember -Cmdlet Get-ContentFolderById
 #Export-ModuleMember -Cmdlet Set-ContentFoldersById
 #Export-ModuleMember -Cmdlet New-Dashboard
+#Export-ModuleMember -Cmdlet Remove-DashboardById
+#Export-ModuleMember -Cmdlet Get-DashboardById
+#Export-ModuleMember -Cmdlet Set-DashboardById
 #Export-ModuleMember -Cmdlet Get-DashboardContentIdById
+#Export-ModuleMember -Cmdlet Edit-DashboardPanelQueries
 #Export-ModuleMember -Cmdlet Get-ExtractionRules
+#Export-ModuleMember -Cmdlet New-ExtractionRule
+#Export-ModuleMember -Cmdlet Remove-ExtractionRuleById
+#Export-ModuleMember -Cmdlet Get-ExtractionRuleById
+#Export-ModuleMember -Cmdlet Set-ExtractionRuleById
 #Export-ModuleMember -Cmdlet Get-Fields
+#Export-ModuleMember -Cmdlet New-Field
+#Export-ModuleMember -Cmdlet Get-FieldsBuiltin
+#Export-ModuleMember -Cmdlet Get-FieldBuiltinById
+#Export-ModuleMember -Cmdlet Get-FieldsDropped
+#Export-ModuleMember -Cmdlet Get-FieldsQuota
+#Export-ModuleMember -Cmdlet Delete-FieldById
+#Export-ModuleMember -Cmdlet Get-FieldById
+#Export-ModuleMember -Cmdlet Set-FieldDisableById
+#Export-ModuleMember -Cmdlet Set-FieldEnableById
 #Export-ModuleMember -Cmdlet get-Folder
 #Export-ModuleMember -Cmdlet get-PersonalFolder
 #Export-ModuleMember -Cmdlet get-GlobalFolder
@@ -4999,8 +5030,35 @@ function Get-Users {
 #Export-ModuleMember -Cmdlet New-LookupTableTruncateById
 #Export-ModuleMember -Cmdlet Set-LookupTableFromCsv
 #Export-ModuleMember -Cmdlet Get-MetricsAlertMonitors
+#Export-ModuleMember -Cmdlet New-MetricsAlertMonitor
+#Export-ModuleMember -Cmdlet Remove-MetricsAlertMonitorById
+#Export-ModuleMember -Cmdlet Get-MetricsAlertMonitorById
+#Export-ModuleMember -Cmdlet Set-MetricsAlertMonitorById
+#Export-ModuleMember -Cmdlet New-MetricsAlertMonitorMuteById
+#Export-ModuleMember -Cmdlet New-MetricsAlertMonitorUnmuteById
 #Export-ModuleMember -Cmdlet New-MetricsSearch
+#Export-ModuleMember -Cmdlet Remove-MetricsSearchById
+#Export-ModuleMember -Cmdlet Get-MetricsSearchById
+#Export-ModuleMember -Cmdlet Set-MetricsSearchById
+#Export-ModuleMember -Cmdlet Get-MonitorsBulkByIds
+#Export-ModuleMember -Cmdlet Get-MonitorsObjectByPath
+#Export-ModuleMember -Cmdlet Get-MonitorsRoot
+#Export-ModuleMember -Cmdlet Get-MonitorsSearch
+#Export-ModuleMember -Cmdlet Get-MonitorsUsageInfo
+#Export-ModuleMember -Cmdlet Remove-MonitorById
+#Export-ModuleMember -Cmdlet Get-MonitorsObjectById
+#Export-ModuleMember -Cmdlet Set-MonitorById
+#Export-ModuleMember -Cmdlet Copy-MonitorById
+#Export-ModuleMember -Cmdlet Get-MonitorExportById
+#Export-ModuleMember -Cmdlet Move-MonitorById
+#Export-ModuleMember -Cmdlet Get-MonitorsObjectPathById
+#Export-ModuleMember -Cmdlet New-MonitorImportById
 #Export-ModuleMember -Cmdlet Get-Partitions
+#Export-ModuleMember -Cmdlet New-Partition
+#Export-ModuleMember -Cmdlet Get-PartitionById
+#Export-ModuleMember -Cmdlet Set-PartitionById
+#Export-ModuleMember -Cmdlet New-PartitionCancelRetentionUpdateById
+#Export-ModuleMember -Cmdlet Set-PartitionDecommissionById
 #Export-ModuleMember -Cmdlet Get-ContentPermissionsById
 #Export-ModuleMember -Cmdlet Set-ContentPermissionsAddById
 #Export-ModuleMember -Cmdlet Set-ContentPermissionsRemoveById
@@ -5024,3 +5082,11 @@ function Get-Users {
 #Export-ModuleMember -Cmdlet get-sources
 #Export-ModuleMember -Cmdlet get-sourceById
 #Export-ModuleMember -Cmdlet Get-Users
+#Export-ModuleMember -Cmdlet New-User
+#Export-ModuleMember -Cmdlet Remove-UserById
+#Export-ModuleMember -Cmdlet Get-UserById
+#Export-ModuleMember -Cmdlet Set-UserById
+#Export-ModuleMember -Cmdlet New-UserEmailRequestChangeById
+#Export-ModuleMember -Cmdlet Set-UserMfaDisableById
+#Export-ModuleMember -Cmdlet Reset-UserPasswordById
+#Export-ModuleMember -Cmdlet Set-UserUnlockById
