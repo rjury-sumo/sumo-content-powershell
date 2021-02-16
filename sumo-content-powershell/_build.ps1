@@ -10,8 +10,8 @@ foreach ($f in dir ./*.ps1) {
 "`n`n######################################################### Export Functions ##############################################################" | out-file ./sumo-content-powershell.psm1 -Encoding ascii -Append
 
 $functionstoexport = @()
-foreach ($f in get-content ./sumo-content-powershell.psm1 | select-string '^function') {
-    $export = ($f -replace 'function ', '' ) -replace ' +{.*', ''
+foreach ($f in get-content ./sumo-content-powershell.psm1 | select-string '^ *function') {
+    $export = ($f -replace ' *function ', '' ) -replace ' +{.*', ''
     if ($export -inotmatch '-' ) {
         # it's probably a function
         $type = "Function"
