@@ -174,10 +174,11 @@ function Get-DashboardContentIdById {
             $changes = 0
             foreach ($query in $panel.queries) {
                 $q = $q + 1
-                        if ($query -match $pattern) {
-                            Write-Verbose "matching panel: $p, query $q replacement: $pattern in $query`n"
+                $query_instance = $query.queryString
+                        if ($query_instance -match $pattern) {
+                            Write-Verbose "matching panel: $p, query $q replacement: $pattern in $query_instance`n"
                             $changes = $changes + 1
-                            $newdash.panels[$p].queries[$q] = $query -replace  $pattern,$replacewith
+                            $newdash.panels[$p].queries[$q].queryString = $query_instance -replace  $pattern,$replacewith
                 }
             }
         }
