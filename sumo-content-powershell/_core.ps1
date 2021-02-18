@@ -26,7 +26,8 @@
 #>
 
 #if (-not ([System.Management.Automation.PSTypeName]'SumoAPISession').Type) {
-try { [SumoAPISession] | Out-Null } catch { Add-Type -TypeDefinition  @"
+try { [SumoAPISession] | Out-Null } catch {
+    Add-Type -TypeDefinition  @"
 public class SumoAPISession
 {
     public SumoAPISession(string Endpoint, object WebSession, string Name, string isAdminMode, string PersonalFolderId) {
@@ -196,7 +197,8 @@ function invoke-sumo {
             else {
                 if ($headers['content-type'] = "application/json") {
                     $body = $body | ConvertTo-Json -Depth 100 -Compress
-                } else {
+                }
+                else {
                     Write-Verbose "custom body content passed as is due to content-type: $($headers['content-type'])"
                 }
             }
@@ -221,14 +223,16 @@ function invoke-sumo {
             return $response
         }
 
-    } else {
+    }
+    else {
         Write-Error "invoke-sumo $uri request failed"
         return @()
     }
 
     if ($returnResponse) {
         return $response
-    } else {
+    }
+    else {
         $r = $response.content | ConvertFrom-Json -Depth 100
 
         if ($r) {
@@ -237,23 +241,30 @@ function invoke-sumo {
             # often there is an embedded data object
             If ($r.GetType().BaseType.name -match "Array") { 
                 return $r
-            } elseif ($r.data) { 
+            }
+            elseif ($r.data) { 
                 return $r.data 
-            } elseif ($r.collector) {
+            }
+            elseif ($r.collector) {
                 return $r.collector
-            } elseif ($r.collectors) {
+            }
+            elseif ($r.collectors) {
                 return $r.collectors
-            } elseif ($r.sources) {
+            }
+            elseif ($r.sources) {
                 return $r.sources
-            } elseif ($r.source) {
+            }
+            elseif ($r.source) {
                 return $r.source
-            } elseif ($r.apps) {
+            }
+            elseif ($r.apps) {
                 return $r.apps
             }
             else {
                 return $r
             }
-        } else {
+        }
+        else {
             Write-Verbose "null content object"
             return @()
         }
@@ -263,57 +274,101 @@ function invoke-sumo {
 
 <#
     .DESCRIPTION
-    Replaces properties in second object with properties in the first object.
-    Also optionally you can substitute text anywhere in the JSON-ified version of the from object using -replace -with
-    Function will return a new instance of -to object.
+    Returns a clone of the $to object.
+    
+    with -props and -from 
+    will copy properties from to cloned object
+    
+    with -replace_props, -replace_pattern, -with 
+    Text substitution of properties specified in either regex mode (default) or with -replace_mode 'text' change a text only mode.
+    If the property substitution is for a string property text replace is vs the string value.
+    Otherwise the replace is vs a 'json-ified' string of the object, which is then converted-back from json.
 
     .PARAMETER from
-    source object (typically say a source or collector)
+    source object (typically say a dashboard, ource, collector)
 
     .PARAMETER to
-    to object (typically say a source or collector)
+    optional target object to clone from. If none is supplied 'from' is cloned as base.
+
+    .PARAMETER replace_props
+    optional: property array in which to replace using replace_pattern and with.
 
     .PARAMETER replace_pattern
-    literal text or pattern to replace text using -replace in the JSON-ified to objct
+    requires replace_props
+    pattern of text to replace. if property is string replacement is vs string, if not is vs a 'json-ified' verion of the object.
+    
+    .PARAMETER mode
+    requires replace_props
+    choose between default regex or string mode
     
     .PARAMETER with
+    requires replace_props
     text to replace with
 
     .EXAMPLE
-    replace any text in the target object with new text
-    copy-proppy -to $mysource -replace_pattern 'test' -with 'prod'
+    copy-proppy -from $my_dashboard -replace-props @('title','description') -replace_pattern 'test' -with 'prod'
+    clone the 'from' dasboard object and return a new object with replacements of text in title and description properties.
     
+    .EXAMPLE
+    copy-proppy -from $resource['source'] -to $resource['source2'] -props @("name")
+    Copies a property 'name' from one source to another, outputting a new object.
+
     .OUTPUTS
     PSCustomObject.
 #>
 function copy-proppy {
     param (
         [Parameter(Mandatory = $false)] $from,
-        [Parameter(Mandatory = $true)]$to,
+        [Parameter(Mandatory = $true)] $to,
         [Parameter(Mandatory = $false)] $props = @("filters", "manualPrefixRegexp", "defaultDateFormats", "name", "description"),
-        [Parameter(Mandatory = $false)]$replace_pattern,
-        [Parameter(Mandatory = $false)]$with
+        [Parameter(Mandatory = $false)] $replace_props = @(),
+        [Parameter(Mandatory = $false)] $replace_pattern,
+        [Parameter(Mandatory = $false)] $replace_mode = 'regex',
+        [Parameter(Mandatory = $false)] $with
 
     )
 
-    write-verbose ($from | out-string)
-    write-verbose ($to | out-string )
+    #write-verbose ($from | out-string)
+    #write-verbose ($to | out-string )
     
-    if ($replace_pattern -and $with ) {
-        $new = ($to | ConvertTo-Json -Depth 10) -replace $replace_pattern, $with 
-        $out = $new | ConvertFrom-Json -Depth 10
-       
-    }
-    else {
-        $out = $to | ConvertTo-Json -Depth 10 | ConvertFrom-Json -Depth 10
+    # make a new copy of the object
+    # note $to is optional
+    if ($from -eq $null ) {
+        $from = $to | ConvertTo-Json -Depth 100 | ConvertFrom-Json -Depth 100  
+    } 
 
-    }
-    if ($from -and $props) {
+    $out = $from | ConvertTo-Json -Depth 10 | ConvertFrom-Json -Depth 10  
+
+    if ($props -and ( compare-object -DifferenceObject $from -ReferenceObject $to -IncludeEqual) -eq $false ) {
         foreach ($p in $props) {
             $out.$p = $from.$p
         }
     }
+    
+    # do replacements on properties if requested.
+    if ($from -and $replace_props) {
+        foreach ($p in $replace_props) {
+            if (($out.$p).gettype().name -eq 'String') {
+                if ($replace_mode -eq 'regex') {
+                    $out.$p = ($out.$p) -replace $replace_pattern, $with 
+                }
+                else {
+                    $out.$p = ($out.$p).replace($replace_pattern, $with)
+                }
+            }
+            else {
+                Write-Verbose "try json replace on non-string property $p.getenumerator()"
+                if ($replace_mode -eq 'regex') {
+                    $out.$p = (($out.$p | ConvertTo-Json -Depth 100) -replace $replace_pattern, $with ) | convertfrom-json -depth 100
+                }
+                else {
+                    $out.$p = (($out.$p | ConvertTo-Json -Depth 20).replace($replace_pattern, $with) ) | convertfrom-json -depth 100
+                }
+            }
+        }
+    }
 
+    # return a new object
     return $out
 }
 
@@ -328,12 +383,12 @@ function convertSumoDecimalContentIdToHexId {
 function New-MultipartBoundary {
     $boundary = [System.Guid]::NewGuid().ToString(); 
     return $boundary
- }
- function New-MultipartContent {
+}
+function New-MultipartContent {
     param(
         [Parameter(Mandatory)]
         $FilePath,
-        [string]$HeaderName='file',
+        [string]$HeaderName = 'file',
         $boundary = [System.Guid]::NewGuid().ToString()
     )
     
@@ -349,11 +404,11 @@ function New-MultipartBoundary {
         $fileEnc,
         "--$boundary--$LF" 
     ) -join $LF
-    return (@{ "multipartBody" = $bodyLines; "boundary" =  $boundary})
- }
+    return (@{ "multipartBody" = $bodyLines; "boundary" = $boundary })
+}
 
 # returns the index of an array using name pattern for a list of objects or hashes.
- function getArrayIndex ($array,$namePattern) {
+function getArrayIndex ($array, $namePattern) {
     $i = -1
     foreach ($element in $array) { 
         $i = $i + 1
@@ -362,7 +417,7 @@ function New-MultipartBoundary {
         }
     }
     return -1
- }
+}
 
 
 <#
@@ -394,18 +449,18 @@ function batchReplace {
     
     $json = $in | convertto-json -depth 100
     foreach ($sub in $substitutions) {
-        if (-not $sub.contains('replace'))  { 
+        if (-not $sub.contains('replace')) { 
             Write-Error "sub object missing replace in $($sub | out-string)"
             return $in
         }
-        if (-not $sub.contains('with'))  { 
+        if (-not $sub.contains('with')) { 
             Write-Error "sub object missing with in $($sub | out-string)"
             return $in
         }
 
-        $json = $json -replace $sub['replace'],$sub['with']
+        $json = $json -replace $sub['replace'], $sub['with']
     }
 
     $out = $json | ConvertFrom-Json -Depth 100
     return $out
- }
+}
