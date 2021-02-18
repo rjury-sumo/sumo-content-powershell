@@ -73,3 +73,28 @@ The replace function is used so matching groups are also possible such as effect
 $d2 = Edit-DashboardPanelQueries -dashboard $dash -pattern 'foo' -replacewith 'bar' 
 ```
 This new dashboard we could post using the new dashboard framework or import as a content item in the content api.
+
+# using copy-proppy function to change dashboard content
+We can use the copy-proppy function to hack round dashboard properties such as panel query strings, or to copy properties from one object to another.
+
+from function help:
+```
+Returns a clone of the $to object.
+
+with -props and -from 
+will copy properties from to cloned object
+
+with -replace_props, -replace_pattern, -with 
+Text substitution of properties specified in either regex mode (default) or with -replace_mode 'text' change a text only mode.
+If the property substitution is for a string property text replace is vs the string value.
+Otherwise the replace is vs a 'json-ified' string of the object, which is then converted-back from json.
+```
+
+For example from tests:
+```
+# return clone object with copied title poperty, which we then replace
+(copy-proppy -from $d1 -to $d2 -props @('title') -replace_props @('title') -replace_pattern 'B|B' -with 'XX' -replace_mode 'text' ).title | Should -match 'A XX C'
+```
+
+
+

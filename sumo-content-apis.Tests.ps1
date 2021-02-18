@@ -48,11 +48,11 @@ Describe "sumo-content-apis-tests" {
             getQueryString @{ 'a' = 'b'; 'c' = 'a b c ' } | Should -Be 'a=b&c=a+b+c+'
         }
 
-        It "copy-proppy replaces text"  {
-            (copy-proppy -to $resource['source'] -replace_pattern 'test' -with 'prod').category | Should -Be 'prod/labs/default'
+        It "copy-proppy returns cloned object with replace text in category property" -Tag 'unit' {
+            (copy-proppy -to $resource['source'] -replace_props @('category') -replace_pattern 'test' -with 'prod').category | Should -Be 'prod/labs/default'
         }
 
-        It "source2 property validation" -Tag "unit" {
+        It "source2 property returns cloned 'to' object with copied name property from 'from'" -Tag "unit" {
             
             (copy-proppy -from $resource['source'] -to $resource['source2'] -props @("name") ).name | Should -Be $resource['source'].name
         }
@@ -110,4 +110,45 @@ Describe "sumo-content-apis-tests" {
             (get-sources -id (get-collectorByName -Name 'test' ).id)[0].sourceType | Should -Be 'HTTP'
         }
     }
+
+    Context "dashboards" -tag "dashboards" {
+
+        It "return clone of 'to' dashboard copying properties from 'from' object"  {
+            $d1 = $resource['dashboard']
+            $d1.title = 'old'
+            $d2 = $resource['dashboard']
+            
+            (copy-proppy -from $d1 -to $d2 -props @('title') ).title | Should -match 'old'
+        }
+
+        It "return clone of 'to' dashboard copying title from 'from' object, and replace a string"  {
+            $d1 = $resource['dashboard']
+            $d1.title = 'A BB C'
+            $d2 = $resource['dashboard']
+            
+            (copy-proppy -from $d1 -to $d2 -props @('title') -replace_props @('title') -replace_pattern 'BB' -with 'XX' ).title | Should -match 'A XX C'
+        }
+
+        It "return clone of 'to' dashboard copying title from 'from' object, and replace a string using text mode"  {
+            $d1 = $resource['dashboard']
+            $d1.title = 'A B|B C'
+            $d2 = $resource['dashboard']
+            
+            (copy-proppy -from $d1 -to $d2 -props @('title') -replace_props @('title') -replace_pattern 'B|B' -with 'XX' -replace_mode 'text' ).title | Should -match 'A XX C'
+        }
+
+        It "return clone of 'to' dashboard copying title from 'from' object, and replace a string using text mode"  {
+            $d1 = $resource['dashboard']
+            $d1.title = 'A B|B C'
+            $d2 = $resource['dashboard']
+            
+            (copy-proppy -from $d1 -to $d2 -props @('title') -replace_props @('title') -replace_pattern 'B|B' -with 'XX' -replace_mode 'text' ).title | Should -match 'A XX C'
+        }
+
+        It "return clone of 'to' dashboard by replace panels object query in JSON mode"  {
+            $d1 = $resource['dashboardapi-exported']
+            (copy-proppy -to $d1 -replace_props @('panels') -replace_pattern 'latitude' -with 'XX' ).panels[0].queries.queryString | Should -Be 'ip ip_address=* | count by ip_address | lookup XX, longitude, country_name from geo://location on ip=ip_address'
+        }
+    }
+
 }
