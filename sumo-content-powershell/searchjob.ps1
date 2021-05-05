@@ -1,7 +1,27 @@
 # an alternative to the sumologic powerhshell sdk start-searchjob
 
-Function get-epochDate ($epochDate) { 
-    [timezone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($epochDate)) 
+Function get-epochDate () { 
+    Param(
+        [parameter(Mandatory = $false)][string] $epochDate,
+        [parameter(Mandatory = $false)][string] $format = 'MM/dd/yyyy HH:mm:ss',
+        [parameter(Mandatory = $false)][bool] $ms = $true
+
+    )
+    if($epochDate) {
+        try { 
+            $date = [Datetime]::ParseExact($epochDate, $format, $null)
+            $dateUTC = $date.ToUniversalTime()
+            [bigint]$epoch = Get-Date $dateUTC -UFormat %s
+         }
+        catch {
+            Write-Host "An error occurred parsing $epochDate using format string: $format"
+            Write-Host $_.ScriptStackTrace
+        }
+    } else {
+        $epoch = [int][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s))
+    }
+    if ($ms) { $epoch = $epoch * 1000}
+    return $epoch
 }
 
 # note we return 1s 10 digit epoc times (not ms epcotimes)
@@ -9,17 +29,21 @@ function sumotime([string]$time) {
     
     if ($time -match 'm') {
         $multiplier = 60 
-    } elseif ($time -match 's') {
+    }
+    elseif ($time -match 's') {
         $multiplier = 1
-    } elseif ($time -match 'h') {
+    }
+    elseif ($time -match 'h') {
         $multiplier = 60 * 60 
-    } elseif ($time -match 'd') {
+    }
+    elseif ($time -match 'd') {
         $multiplier = 60 * 60 * 24
-    } else { Write-Error "invalid sumo timespec must be m s h d (minutes, seconds, hours or days"}
-    $t = $time -replace 'h|m|d|s|-',''
+    }
+    else { Write-Error "invalid sumo timespec must be m s h d (minutes, seconds, hours or days" }
+    $t = $time -replace 'h|m|d|s|-', ''
 
     [bigint]$offset = ($t -as [int] ) * $multiplier 
-    $now =  [bigint][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s)) 
+    $now = [bigint][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s)) 
     return [bigint]($now - $offset)
 }
 # this function would evaluate sumo time range expressions such as -15m or -1h to -5m
@@ -39,7 +63,7 @@ function sumolast($last) {
         Write-Error "Sumo last expression failed validation must be -<digit>[hmsd] or -<range><space>-<range> where range is -<digit>[hmsd]"
         return $false, $false
     }
-    return $from,$to
+    return $from, $to
 }
 
 
@@ -142,7 +166,7 @@ function New-SearchQuery {
     }
 
     if ($last) { 
-        $from,$to = sumolast($last)
+        $from, $to = sumolast($last)
         if ($from -and $to ) {} else {
             Write-Error "sumo -last value vailed validation"
             return $null
@@ -176,17 +200,18 @@ function New-SearchQuery {
     }
 
     $body = @{
-        "query"    = $query
-        "from"     = "$from"
-        "to"       = "$to"
-        "timeZone" = $timeZone
-        "byReceiptTime" = $byReceiptTime
+        "query"           = $query
+        "from"            = "$from"
+        "to"              = "$to"
+        "timeZone"        = $timeZone
+        "byReceiptTime"   = $byReceiptTime
         "autoParsingMode" = $autoParsingMode
     }
 
     if ($dryrun ) {
         return $body
-    } else {
+    }
+    else {
         return (invoke-sumo -path "search/jobs" -method 'POST' -session $sumo_session  -body $body -v 'v1')
     }
 
@@ -274,23 +299,25 @@ function Export-SearchJobEvents {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter(Mandatory = $true)] $job, 
-        [parameter(Mandatory = $false)][string]  [ValidateSet("records","messages")] $return = "records",
+        [parameter(Mandatory = $false)][string]  [ValidateSet("records", "messages")] $return = "records",
         [parameter(Mandatory = $false)][int] $limit = 1000
 
     )
 
-        if ($job.id -and ($job.PSobject.Properties.name -match "messageCount") -and ($job.PSobject.Properties.name -match "recordCount") ) {
+    if ($job.id -and ($job.PSobject.Properties.name -match "messageCount") -and ($job.PSobject.Properties.name -match "recordCount") ) {
 
-        } else { 
-            Write-Error "passed -job object is missing required properties"
-            return @()
+    }
+    else { 
+        Write-Error "passed -job object is missing required properties"
+        return @()
     }
 
-    $offset=0
+    $offset = 0
 
     if ($return -eq "records") {
         $totalresults = $job.recordCount
-    } elseif ($return -eq "messages") {
+    }
+    elseif ($return -eq "messages") {
         $totalresults = $job.messageCount
     }
     $remaining = $totalresults
@@ -299,10 +326,10 @@ function Export-SearchJobEvents {
     While ($totalresults -gt 0 -and $remaining -gt 0) {
         $params = @{
             "offset" = $offset
-            "limit" = $limit
+            "limit"  = $limit
         }
         # get the page
-        $page =  (invoke-sumo -path "search/jobs/$($job.id)/$return" -method 'GET' -session $sumo_session   -v 'v1' -params $params)
+        $page = (invoke-sumo -path "search/jobs/$($job.id)/$return" -method 'GET' -session $sumo_session   -v 'v1' -params $params)
 
         $resultSet.fields = $page.fields
         $resultSet.$return = $resultSet.$return + $page.$return
@@ -357,27 +384,31 @@ function get-SearchJobResult {
         [parameter(Mandatory = $false)] $job, # job object
         [parameter(Mandatory = $false)][int] $poll_secs = 1,
         [parameter(Mandatory = $false)][int] $max_tries = 60,
-        [parameter(Mandatory = $false)][string]  [ValidateSet("status","records","messages")] $return = "status"
+        [parameter(Mandatory = $false)][string]  [ValidateSet("status", "records", "messages")] $return = "status"
 
     )
 
     if ($jobid) {
         Write-Verbose 'run by job id'
 
-    }  elseif ($job) {
+    }
+    elseif ($job) {
         Write-Verbose 'run by job object'
         if ($job.id) {
-            $jobid=$job.id
-        } else { 
+            $jobid = $job.id
+        }
+        else { 
             Write-Error 'job object has no id property';
             return $job
         }
-    }  elseif ($query ) {
+    }
+    elseif ($query ) {
         Write-Verbose 'run by query'
         Write-Verbose "query: `n$($query | convertto-json -depth 10) `n"
         $job = New-SearchJob -body $query -sumo_session $sumo_session
-        $jobid=$job.id
-    } else {
+        $jobid = $job.id
+    }
+    else {
         Write-Error 'you must provide a new -query object or -jobid of an existing job, or a -job object with id.'
     }
     
@@ -392,7 +423,8 @@ function get-SearchJobResult {
         if ($last -ne $job_state.state) {
             write-host "change status: from: $last to $($job_state.state) at $($tries * $poll_seconds) seconds."
             $last = "$($job_state.state)"
-        } else {
+        }
+        else {
             Write-Verbose  ($job_state.state)
         }
 
@@ -409,14 +441,15 @@ function get-SearchJobResult {
     }   
     Write-Verbose "job poll completed: status: $($job_state.state) jobId: $jobid"
     if ($job_state.state -ne 'DONE GATHERING RESULTS') {
-         Write-Error "Job failed or timed out for job: $jobid"; 
-         return 
+        Write-Error "Job failed or timed out for job: $jobid"; 
+        return 
     }
     $job_state  | Add-Member -NotePropertyName id -NotePropertyValue $jobid -Force
 
     if ($return -eq "messages" ) {
         $job_state | Add-Member -NotePropertyName messages -NotePropertyValue (Export-SearchJobEvents -job $job_state -return 'messages')
-    } elseif ($return -eq "records") {
+    }
+    elseif ($return -eq "records") {
         $job_state | Add-Member -NotePropertyName records -NotePropertyValue (Export-SearchJobEvents -job $job_state -return 'records')
     }
 

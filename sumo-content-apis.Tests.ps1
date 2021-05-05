@@ -151,4 +151,15 @@ Describe "sumo-content-apis-tests" {
         }
     }
 
+    Context "searchjob" -tag "searchjob" {
+
+        It "get-epochDate -epochDate '04/05/2021 12:26:00' returns 1617582360000"  {
+            get-epochDate -epochDate '04/05/2021 12:26:00' | Should -Be '1617582360000'
+        }
+
+        It "get-epochDate retuns ms same as get-date to utc epoch" {
+           get-epochDate | Should -Be (([int][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s))) * 1000)
+        }
+    }
+
 }
