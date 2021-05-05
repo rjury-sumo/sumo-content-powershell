@@ -22,30 +22,31 @@ Function get-epochDate () {
         [parameter(Mandatory = $false)][bool] $ms = $true
 
     )
-    if($epochDate) {
+    if ($epochDate) {
         try { 
-            if($format -eq 'auto') {
+            if ($format -eq 'auto') {
                 $date = [datetime]$epochDate
-            } else {
+            }
+            else {
                 $date = [Datetime]::ParseExact($epochDate, $format, $null)
             }
             $dateUTC = $date.ToUniversalTime()
             [bigint]$epoch = Get-Date $dateUTC -UFormat %s
-         }
-        catch {
-            Write-Host "An error occurred parsing $epochDate using format string: $format"
-            Write-Host $_.ScriptStackTrace
         }
-    } else {
+        catch {
+            Write-Error "An error occurred parsing $epochDate using format string: $format"
+            Write-Error $_.ScriptStackTrace
+        }
+    }
+    else {
         $epoch = [int][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s))
     }
-    if ($ms) { $epoch = $epoch * 1000}
+    if ($ms) { $epoch = $epoch * 1000 }
     return $epoch
 }
 
 # return a date string represenation of a epochtime
-Function get-DateStringFromEpoch ($epoch) 
-{ 
+Function get-DateStringFromEpoch ($epoch) { 
     if ($epoch.toString() -match '[0-9]{13,14}' ) {
         $epoch = [bigint]($epoch / 1000)
     }
@@ -64,11 +65,19 @@ Optinoal date, if not provided returns now
 .PARAMETER end
 can be auto in which case powershell tries default casting or a foramt string for ParseExact.
 
-.PARAMETER interval_ms
+.PARAMETER intervalms
 an interval for timeslices expressessed as ms. default is 1 hour
 
 .OUTPUTS
 bigint object as a ms or non ms ecoch time.
+example timeslice object:
+Name                           Value
+----                           -----
+interval_ms                    3600000
+startString                    04/05/2021 00:00:00
+endString                      04/05/2021 01:00:00
+start                          1617537600000
+end                            1617541200000
 
 #>
 
@@ -76,38 +85,39 @@ Function get-timeslices () {
     Param(
         [parameter(Mandatory = $true)] $start,
         [parameter(Mandatory = $true)] $end,
-        [parameter(Mandatory = $false)] $interval_ms = (1000 * 60 * 60)
+        [parameter(Mandatory = $false)] $intervalms = (1000 * 60 * 60)
     )
 
-   $startEpocUtc = get-epochDate -epochDate $start
-   $endEpochUtc = get-epochDate -epochDate $end
+    $startEpocUtc = get-epochDate -epochDate $start
+    $endEpochUtc = get-epochDate -epochDate $end
 
-   $slices = @()
-   $remaining = $endEpochUtc - $startEpocUtc
-   $s = $startEpocUtc
-   Write-Verbose "$start $startEpocUtc $end $endEpochUtc $s $remaining"
+    $slices = @()
+    $remaining = $endEpochUtc - $startEpocUtc
+    $s = $startEpocUtc
+    Write-Verbose "$start $startEpocUtc $end $endEpochUtc $s $remaining"
 
-   while ($remaining -gt 0) {
-       $e = $s + $interval_ms
+    while ($remaining -gt 0) {
+        $e = $s + $intervalms
 
-       if ($e > $endEpochUtc) { 
-           $e = $endEpochUtc;
-           $interval_ms = $endEpochUtc - $s
-       } else {
-           $e = $s + $interval_ms
-       }
+        if ($e -gt $endEpochUtc) { 
+            $e = $endEpochUtc;
+            $intervalms = $endEpochUtc - $s
+        }
+        else {
+            $e = $s + $intervalms
+        }
 
         $slices = $slices + @{ 
-            'start' = $s; 
-            'end' = $e; 
-            'interval_ms' = $interval_ms; 
+            'start'       = $s; 
+            'end'         = $e; 
+            'intervalms'  = $intervalms; 
             "startString" = get-DateStringFromEpoch -epoch $s; 
-            "endString" = get-DateStringFromEpoch -epoch $e 
+            "endString"   = get-DateStringFromEpoch -epoch $e 
         }
 
         $s = $e + 0
         $remaining = $endEpochUtc - $e
-   }
+    }
 
     return $slices
 }
@@ -232,7 +242,6 @@ function New-SearchQuery {
         [parameter(mandatory = $false)][bool]$dryrun = $false,
         [Parameter(Mandatory = $false)][array]$substitutions
 
-
     )
 
     $utcNow = [bigint][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s)) * 1000
@@ -263,7 +272,7 @@ function New-SearchQuery {
     }
     elseif ($from -and $to ) {
         $from = epocvalidation($from)
-        $to = epocvalication($to)
+        $to = epocvalidation($to)
         if ($from -and $to) {
             Write-Verbose "from and to passed validation"
         }
@@ -471,7 +480,7 @@ function get-SearchJobResult {
         [parameter(Mandatory = $false)] $jobid, # job id of an existing completed job
         [parameter(Mandatory = $false)] $job, # job object
         [parameter(Mandatory = $false)][int] $poll_secs = 1,
-        [parameter(Mandatory = $false)][int] $max_tries = 60,
+        [parameter(Mandatory = $false)][int] $max_tries = 120,
         [parameter(Mandatory = $false)][string]  [ValidateSet("status", "records", "messages")] $return = "status"
 
     )
@@ -543,3 +552,104 @@ function get-SearchJobResult {
 
     return  $job_state
 }
+
+
+
+<#
+.SYNOPSIS
+Runs a query a lot of times with variations such as timeslices.
+
+.DESCRIPTION
+Run a query lots of times in series, useful for bulk data operationas such as building a view.
+
+.PARAMETER sumo_session
+Specify a session, defaults to $sumo_session
+
+.PARAMETER query
+optional query object from New-SearchQuery -dryrun
+
+.PARAMETER poll_secs
+default 1, the poll interval to check for job completion.
+
+.PARAMETER max_tries
+default 120, the maximumum number of poll cycles to wait for completion
+
+.PARAMETER outputPath
+writes each job output to a path specified. Defaults to ./output
+
+.PARAMETER startTimeString
+start time  for the job
+
+.PARAMETER endTimeString
+end time  for the job
+
+.PARAMETER intervalMs
+ms intervals for batching start and end times.
+
+.PARAMETER return
+"status","records","messages"
+status returns on the job result object
+records adds a records property contining the records results pages
+messages adds a messages property containing the messages results pages
+
+.OUTPUTS
+PSObject for the search job which as id. May have records or messages properties.
+
+#>
+function New-SearchBatchJob {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter(Mandatory = $true)] $query, # query object from New-SearchQuery -dryrun
+        [parameter(Mandatory = $false)] $outputPath = './output', 
+        [parameter(Mandatory = $false)] [string]$startTimeString = (Get-Date).AddMinutes(-60),
+        [parameter(Mandatory = $false)] [string]$endTimeString = (Get-Date), 
+        [parameter(Mandatory = $false)] [int]$intervalMs = (1000 * 60 * 60), 
+        [parameter()] [string]$byReceiptTime = 'False',
+        [parameter()] [string]$autoParsingMode = 'performance',
+        [parameter(Mandatory = $false)][int] $poll_secs = 1,
+        [parameter(Mandatory = $false)][int] $max_tries = 120,
+        [parameter(Mandatory = $false)][string]  [ValidateSet("status", "records", "messages")] $return = "status",
+        [parameter(mandatory = $false)][bool]$dryrun = $true
+    )
+
+    $batchJob = new-guid
+
+    write-host "Starting Batch Job: $batchjob at $(get-date)"
+
+    try {
+        $timeslices = get-timeslices -start $startTimeString -end $endTimeString -intervalms $intervalMs
+    }
+    catch {
+        Write-Error "An error occurred generating timeslices for $startTimeString to endTimeString with interval: intervalMs"
+        Write-Error $_.ScriptStackTrace
+    }
+
+    New-Item -path "$outputPath" -Type Directory -ErrorAction SilentlyContinue -force | out-null
+    New-Item -path "$outputPath/jobs/$batchjob/queries" -Type Directory -ErrorAction SilentlyContinue -force | out-null
+    New-Item -path "$outputPath/jobs/$batchjob/completed" -Type Directory -ErrorAction SilentlyContinue -force | out-null
+
+    $i = 0
+    foreach ($slice in $timeslices) {
+        Write-Verbose "query $i from $($slice['startString']) end $($slice['endString'])" 
+        $i = $i + 1
+        try {
+            $sliceQuery = new-searchQuery -query $query -from $slice['start'] -to $slice['end'] $query -byReceiptTime $byReceiptTime -autoParsingMode $autoParsingMode -sumo_session $sumo_session -dryrun $true #-verbose
+            $sliceQuery | convertto-json | out-file -filepath "$outputPath/jobs/$batchjob/queries/query_$($slice['start'])_$($slice['end']).json"
+
+            if ($dryrun -eq $false ) {
+                write-host "Executing job: $i from $($slice['startString']) end $($slice['endString'])"
+                $result = get-SearchJobResult -query $sliceQuery -sumo_session $sumo_session -poll_secs $poll_secs -max_tries $max_tries -return $return
+                $jobpath = "$outputPath/jobs/$batchjob/completed/query_$($slice['start'])_$($slice['end']).json"
+                write-verbose "writing output to: $jobpath"
+                $result | convertto-json | out-file -filepath $jobpath
+            }
+        }
+        catch {
+            Write-Error "An error occurred executing query slice from $($slice['startString']) end $($slice['endString'])"
+            Write-Error $_.ScriptStackTrace
+        }
+    }
+
+    return "$outputPath/jobs/$batchjob"
+}
+
