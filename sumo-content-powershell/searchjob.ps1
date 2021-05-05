@@ -207,8 +207,15 @@ Supply an aboslute epoc end time
 .PARAMETER TimeZone
 Time zone used for time range query defaults to UTC
 
+.PARAMETER byReceiptTime
+string boolean Define as true to run the search using receipt time. By default, searches do not run by receipt time.
+
+.PARAMETER autoParsingMode
+This enables dynamic parsing, when specified as intelligent, Sumo automatically runs field extraction on your JSON log messages when you run a search. By default, searches run in performance mode.
+
 .PARAMETER dryrun
 if set to true function returns the query object that wouuld be submitted as -body
+if set to false starts the search job and add's an id property to the return object.
 
 .PARAMETER sumo_session
 Specify a session, defaults to $sumo_session
@@ -239,7 +246,7 @@ function New-SearchQuery {
         [parameter()][string]$timeZone = 'UTC',
         [parameter()][string]$byReceiptTime = 'False',
         [parameter()][string]$autoParsingMode = 'performance',
-        [parameter(mandatory = $false)][bool]$dryrun = $false,
+        [parameter(mandatory = $false)][bool]$dryrun = $true,
         [Parameter(Mandatory = $false)][array]$substitutions
 
     )
@@ -469,6 +476,10 @@ status returns on the job result object
 records adds a records property contining the records results pages
 messages adds a messages property containing the messages results pages
 
+.EXAMPLE
+$q = New-SearchQuery -query 'error| count by _sourcecategory | limit 7' -dryrun $true -last '-15m'
+get-SearchJobResult -query $q -return status  
+
 .OUTPUTS
 PSObject for the search job which as id. May have records or messages properties.
 
@@ -557,22 +568,18 @@ function get-SearchJobResult {
 
 <#
 .SYNOPSIS
-Runs a query a lot of times with variations such as timeslices.
+Creates a query batch for repeating queries over a series of timeslices.
 
 .DESCRIPTION
-Run a query lots of times in series, useful for bulk data operationas such as building a view.
+Run a query lots of times in series, useful for bulk data operationas such as export or building a view.
+Creates an output job folder for example: ./output/jobs/bf512d66-6261-4cfd-bdbc-9d0c94a86e50  
+This folder contains as queries folder of each query object to execute, and if dryrun=false each query is executed and output stored in the completed folder.
 
 .PARAMETER sumo_session
 Specify a session, defaults to $sumo_session
 
 .PARAMETER query
-optional query object from New-SearchQuery -dryrun
-
-.PARAMETER poll_secs
-default 1, the poll interval to check for job completion.
-
-.PARAMETER max_tries
-default 120, the maximumum number of poll cycles to wait for completion
+the query to run in the batch job.
 
 .PARAMETER outputPath
 writes each job output to a path specified. Defaults to ./output
@@ -586,35 +593,57 @@ end time  for the job
 .PARAMETER intervalMs
 ms intervals for batching start and end times.
 
+.PARAMETER byReceiptTime
+string boolean Define as true to run the search using receipt time. By default, searches do not run by receipt time.
+
+.PARAMETER autoParsingMode
+This enables dynamic parsing, when specified as intelligent, Sumo automatically runs field extraction on your JSON log messages when you run a search. By default, searches run in performance mode.
+
+.PARAMETER poll_secs
+default 1, the poll interval to check for job completion.
+
+.PARAMETER max_tries
+default 120, the maximumum number of poll cycles to wait for completion
+
 .PARAMETER return
 "status","records","messages"
 status returns on the job result object
 records adds a records property contining the records results pages
 messages adds a messages property containing the messages results pages
 
+.EXAMPLE
+Create a batch job of queries 
+New-SearchBatchJob -query 'error | limit 1'  -dryrun $false -return records
+
+.EXAMPLE
+batch job with more options
+New-SearchBatchJob -query 'error | limit 5' -dryrun $false -return records -startTimeString ((Get-Date).AddMinutes(-60)) -endTimeString (Get-Date) -sumo_session $sanbox
+
 .OUTPUTS
-PSObject for the search job which as id. May have records or messages properties.
+returns the path of the batch job output.
+./output/jobs/bf512d66-6261-4cfd-bdbc-9d0c94a86e50  
 
 #>
 function New-SearchBatchJob {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(Mandatory = $true)] $query, # query object from New-SearchQuery -dryrun
+        [parameter(Mandatory = $true)] $query, 
         [parameter(Mandatory = $false)] $outputPath = './output', 
         [parameter(Mandatory = $false)] [string]$startTimeString = (Get-Date).AddMinutes(-60),
         [parameter(Mandatory = $false)] [string]$endTimeString = (Get-Date), 
         [parameter(Mandatory = $false)] [int]$intervalMs = (1000 * 60 * 60), 
-        [parameter()] [string]$byReceiptTime = 'False',
-        [parameter()] [string]$autoParsingMode = 'performance',
+        [parameter()] [string][ValidateSet("true", "false")] $byReceiptTime = 'False',
+        [parameter()] [string][ValidateSet("performance", "intelligent")]$autoParsingMode = 'performance',
         [parameter(Mandatory = $false)][int] $poll_secs = 1,
         [parameter(Mandatory = $false)][int] $max_tries = 120,
-        [parameter(Mandatory = $false)][string]  [ValidateSet("status", "records", "messages")] $return = "status",
+        [parameter(Mandatory = $false)][string][ValidateSet("status", "records", "messages")] $return = "status",
         [parameter(mandatory = $false)][bool]$dryrun = $true
     )
 
     $batchJob = new-guid
 
     write-host "Starting Batch Job: $batchjob at $(get-date)"
+    Write-Verbose "start: $startTimeString end: $endTimeString intervalms: $intervalMs byreceittime: $byReceiptTime autoparsemode: $autoParsingMode poll_secs: $poll_secs retries: $max_tries"
 
     try {
         $timeslices = get-timeslices -start $startTimeString -end $endTimeString -intervalms $intervalMs
