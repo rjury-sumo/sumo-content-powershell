@@ -658,9 +658,12 @@ function New-SearchBatchJob {
     New-Item -path "$outputPath/jobs/$batchjob/completed" -Type Directory -ErrorAction SilentlyContinue -force | out-null
 
     $i = 0
+    $executed = 0
+    $errors = 0
+
     foreach ($slice in $timeslices) {
-        Write-Verbose "query $i from $($slice['startString']) end $($slice['endString'])" 
         $i = $i + 1
+        Write-Host "$i  from: $($slice['startString'])    to: $($slice['endString'])    file: $outputPath/jobs/$batchjob/queries/query_$($slice['start'])_$($slice['end']).json"
         try {
             $sliceQuery = new-searchQuery -query $query -from $slice['start'] -to $slice['end'] $query -byReceiptTime $byReceiptTime -autoParsingMode $autoParsingMode -sumo_session $sumo_session -dryrun $true #-verbose
             $sliceQuery | convertto-json | out-file -filepath "$outputPath/jobs/$batchjob/queries/query_$($slice['start'])_$($slice['end']).json"
@@ -671,13 +674,16 @@ function New-SearchBatchJob {
                 $jobpath = "$outputPath/jobs/$batchjob/completed/query_$($slice['start'])_$($slice['end']).json"
                 write-verbose "writing output to: $jobpath"
                 $result | convertto-json | out-file -filepath $jobpath
+                $executed = $executed +1 
             }
         }
         catch {
             Write-Error "An error occurred executing query slice from $($slice['startString']) end $($slice['endString'])"
             Write-Error $_.ScriptStackTrace
+            $errors = $errors +1
         }
     }
+    write-host "REPORT: queries: $i executed: $executed errors: $errors"
 
     return "$outputPath/jobs/$batchjob"
 }
