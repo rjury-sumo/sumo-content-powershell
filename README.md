@@ -10,6 +10,19 @@ You can import the module as below. The only folder you need is the [sumo-conten
 Import-Module ./sumo-content-powershell/sumo-content-powershell.psd1
 ```
 
+# dot sourcing current code
+Before the module is rebuilt you can 'dot source' the current code. 
+
+For example here we open the 
+```
+docker build -t sumo_agent .
+docker run --env SUMO_DEPLOYMENT=au --env SUMO_ACCESS_ID=$SUMO_ACCESS_ID --env SUMO_ACCESS_KEY=$SUMO_ACCESS_KEY -it sumologic-content-powershell:latest
+
+. ./dot.source.ps1
+new-ContentSession
+get-PersonalFolder
+```
+
 ## make a new session
 Make a new content session. You can save the output of this command to a variable to maintain multiple sessions.
 
