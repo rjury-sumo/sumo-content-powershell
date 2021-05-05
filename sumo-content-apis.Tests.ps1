@@ -171,7 +171,7 @@ Describe "sumo-content-apis-tests" {
         }
 
         It "get-timeslices returns valid timeslice array" {
-            $sample = '[{"interval_ms":3600000,"startString":"04/05/2021 00:00:00","endString":"04/05/2021 01:00:00","start":{"IsPowerOfTwo":false,"IsZero":false,"IsOne":false,"IsEven":true,"Sign":1},"end":{"IsPowerOfTwo":false,"IsZero":false,"IsOne":false,"IsEven":true,"Sign":1}},{"interval_ms":3600000,"startString":"04/05/2021 01:00:00","endString":"04/05/2021 02:00:00","start":{"IsPowerOfTwo":false,"IsZero":false,"IsOne":false,"IsEven":true,"Sign":1},"end":{"IsPowerOfTwo":false,"IsZero":false,"IsOne":false,"IsEven":true,"Sign":1}}]'
+            $sample = '[{"intervalms":3600000,"startString":"04/05/2021 00:00:00","endString":"04/05/2021 01:00:00","start":{"IsPowerOfTwo":false,"IsZero":false,"IsOne":false,"IsEven":true,"Sign":1},"end":{"IsPowerOfTwo":false,"IsZero":false,"IsOne":false,"IsEven":true,"Sign":1}},{"intervalms":3600000,"startString":"04/05/2021 01:00:00","endString":"04/05/2021 02:00:00","start":{"IsPowerOfTwo":false,"IsZero":false,"IsOne":false,"IsEven":true,"Sign":1},"end":{"IsPowerOfTwo":false,"IsZero":false,"IsOne":false,"IsEven":true,"Sign":1}}]'
             (get-timeslices -start '04/05/2021 00:00:00' -end '04/05/2021 02:00:00' | convertto-json -compress ) | Should -Be $sample
 
         }
