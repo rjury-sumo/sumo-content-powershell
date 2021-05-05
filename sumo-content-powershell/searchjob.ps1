@@ -1,15 +1,34 @@
 # an alternative to the sumologic powerhshell sdk start-searchjob
 
+<#
+.SYNOPSIS
+returns an epch time in ms or not from a date string provided.
+
+.PARAMETER epochDate
+Optinoal date, if not provided returns now
+
+.PARAMETER format
+can be auto in which case powershell tries default casting or a foramt string for ParseExact.
+
+.OUTPUTS
+bigint object as a ms or non ms ecoch time.
+
+#>
+
 Function get-epochDate () { 
     Param(
         [parameter(Mandatory = $false)][string] $epochDate,
-        [parameter(Mandatory = $false)][string] $format = 'MM/dd/yyyy HH:mm:ss',
+        [parameter(Mandatory = $false)][string] $format = 'auto', # or say 'MM/dd/yyyy HH:mm:ss',
         [parameter(Mandatory = $false)][bool] $ms = $true
 
     )
     if($epochDate) {
         try { 
-            $date = [Datetime]::ParseExact($epochDate, $format, $null)
+            if($format -eq 'auto') {
+                $date = [datetime]$epochDate
+            } else {
+                $date = [Datetime]::ParseExact($epochDate, $format, $null)
+            }
             $dateUTC = $date.ToUniversalTime()
             [bigint]$epoch = Get-Date $dateUTC -UFormat %s
          }
@@ -22,6 +41,75 @@ Function get-epochDate () {
     }
     if ($ms) { $epoch = $epoch * 1000}
     return $epoch
+}
+
+# return a date string represenation of a epochtime
+Function get-DateStringFromEpoch ($epoch) 
+{ 
+    if ($epoch.toString() -match '[0-9]{13,14}' ) {
+        $epoch = [bigint]($epoch / 1000)
+    }
+    return [string][timezone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($epoch)) 
+}
+
+# an alternative to the sumologic powerhshell sdk start-searchjob
+
+<#
+.SYNOPSIS
+Returns an array of start and end times. ideally to run a query on.
+
+.PARAMETER start
+Optinoal date, if not provided returns now
+
+.PARAMETER end
+can be auto in which case powershell tries default casting or a foramt string for ParseExact.
+
+.PARAMETER interval_ms
+an interval for timeslices expressessed as ms. default is 1 hour
+
+.OUTPUTS
+bigint object as a ms or non ms ecoch time.
+
+#>
+
+Function get-timeslices () { 
+    Param(
+        [parameter(Mandatory = $true)] $start,
+        [parameter(Mandatory = $true)] $end,
+        [parameter(Mandatory = $false)] $interval_ms = (1000 * 60 * 60)
+    )
+
+   $startEpocUtc = get-epochDate -epochDate $start
+   $endEpochUtc = get-epochDate -epochDate $end
+
+   $slices = @()
+   $remaining = $endEpochUtc - $startEpocUtc
+   $s = $startEpocUtc
+   Write-Verbose "$start $startEpocUtc $end $endEpochUtc $s $remaining"
+
+   while ($remaining -gt 0) {
+       $e = $s + $interval_ms
+
+       if ($e > $endEpochUtc) { 
+           $e = $endEpochUtc;
+           $interval_ms = $endEpochUtc - $s
+       } else {
+           $e = $s + $interval_ms
+       }
+
+        $slices = $slices + @{ 
+            'start' = $s; 
+            'end' = $e; 
+            'interval_ms' = $interval_ms; 
+            "startString" = get-DateStringFromEpoch -epoch $s; 
+            "endString" = get-DateStringFromEpoch -epoch $e 
+        }
+
+        $s = $e + 0
+        $remaining = $endEpochUtc - $e
+   }
+
+    return $slices
 }
 
 # note we return 1s 10 digit epoc times (not ms epcotimes)
