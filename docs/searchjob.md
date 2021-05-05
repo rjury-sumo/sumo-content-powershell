@@ -68,6 +68,11 @@ In dryrun false mode the queries will execute and there is 1 file per job result
 ```
 New-SearchBatchJob -query 'error | limit 5' -dryrun $false -return records -startTimeString ((Get-Date).AddMinutes(-180)) -endTimeString (Get-Date) -sumo_session $sanbox
 ```
+## Using a file as the query source for a batchjob.
+You can specify a file path instead of query string as the query source with -file
+```
+ New-SearchBatchJob -file './library/example.sumo' -dryrun $true  -return records -startTimeString ((Get-Date).AddMinutes(-180)) -endTimeString (Get-Date)
+```
 
 # How to start a search job and return the Id only
 Executing the New-SearchQuery -dryrun $false **executes the query and returns a job object** for example:

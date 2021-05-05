@@ -579,7 +579,10 @@ This folder contains as queries folder of each query object to execute, and if d
 Specify a session, defaults to $sumo_session
 
 .PARAMETER query
-the query to run in the batch job.
+the query string to run in the batch job.
+
+.PARAMETER file
+alternative to -query you can specify a file path of a query text file.
 
 .PARAMETER outputPath
 writes each job output to a path specified. Defaults to ./output
@@ -619,6 +622,10 @@ New-SearchBatchJob -query 'error | limit 1'  -dryrun $false -return records
 batch job with more options
 New-SearchBatchJob -query 'error | limit 5' -dryrun $false -return records -startTimeString ((Get-Date).AddMinutes(-60)) -endTimeString (Get-Date) -sumo_session $sanbox
 
+.EXAMPLE
+Run a query with query string in a text file.
+New-SearchBatchJob -file './library/example.sumo' -dryrun $true  -return records -startTimeString ((Get-Date).AddMinutes(-180)) -endTimeString 'Wednesday, May 5, 2021 5:15:22 PM'
+
 .OUTPUTS
 returns the path of the batch job output.
 ./output/jobs/bf512d66-6261-4cfd-bdbc-9d0c94a86e50  
@@ -627,8 +634,9 @@ returns the path of the batch job output.
 function New-SearchBatchJob {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter(Mandatory = $true)] $query, 
-        [parameter(Mandatory = $false)] $outputPath = './output', 
+        [parameter(Mandatory = $false)] [string]$query, 
+        [parameter(Mandatory = $false)] [string]$file, 
+        [parameter(Mandatory = $false)] [string]$outputPath = './output', 
         [parameter(Mandatory = $false)] [string]$startTimeString = (Get-Date).AddMinutes(-60),
         [parameter(Mandatory = $false)] [string]$endTimeString = (Get-Date), 
         [parameter(Mandatory = $false)] [int]$intervalMs = (1000 * 60 * 60), 
@@ -641,6 +649,17 @@ function New-SearchBatchJob {
     )
 
     $batchJob = new-guid
+
+    # we must have a valid query
+    if ($query) {
+    }
+    elseif ($file) {
+        $query = Get-Content -Path $file -Raw
+    }
+    else {
+        Write-Error "New-SearchJob requires either -query or -file"
+        return $null
+    }
 
     write-host "Starting Batch Job: $batchjob at $(get-date)"
     Write-Verbose "start: $startTimeString end: $endTimeString intervalms: $intervalMs byreceittime: $byReceiptTime autoparsemode: $autoParsingMode poll_secs: $poll_secs retries: $max_tries"
@@ -674,13 +693,13 @@ function New-SearchBatchJob {
                 $jobpath = "$outputPath/jobs/$batchjob/completed/query_$($slice['start'])_$($slice['end']).json"
                 write-verbose "writing output to: $jobpath"
                 $result | convertto-json | out-file -filepath $jobpath
-                $executed = $executed +1 
+                $executed = $executed + 1 
             }
         }
         catch {
             Write-Error "An error occurred executing query slice from $($slice['startString']) end $($slice['endString'])"
             Write-Error $_.ScriptStackTrace
-            $errors = $errors +1
+            $errors = $errors + 1
         }
     }
     write-host "REPORT: queries: $i executed: $executed errors: $errors"
