@@ -11,7 +11,7 @@ Optinoal date, if not provided returns now
 can be auto in which case powershell tries default casting or a foramt string for ParseExact.
 
 .OUTPUTS
-bigint object as a ms or non ms ecoch time.
+long object as a ms or non ms ecoch time.
 
 #>
 
@@ -31,7 +31,7 @@ Function get-epochDate () {
                 $date = [Datetime]::ParseExact($epochDate, $format, $null)
             }
             $dateUTC = $date.ToUniversalTime()
-            [bigint]$epoch = Get-Date $dateUTC -UFormat %s
+            [int]$epoch = Get-Date $dateUTC -UFormat %s
         }
         catch {
             Write-Error "An error occurred parsing $epochDate using format string: $format"
@@ -41,14 +41,14 @@ Function get-epochDate () {
     else {
         $epoch = [int][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s))
     }
-    if ($ms) { $epoch = $epoch * 1000 }
+    if ($ms) { [long]$epoch = $epoch * 1000 }
     return $epoch
 }
 
 # return a date string represenation of a epochtime
 Function get-DateStringFromEpoch ($epoch) { 
     if ($epoch.toString() -match '[0-9]{13,14}' ) {
-        $epoch = [bigint]($epoch / 1000)
+        $epoch = [long]($epoch / 1000)
     }
     return [string][timezone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($epoch)) 
 }
@@ -69,7 +69,7 @@ can be auto in which case powershell tries default casting or a foramt string fo
 an interval for timeslices expressessed as ms. default is 1 hour
 
 .OUTPUTS
-bigint object as a ms or non ms ecoch time.
+long object as a ms or non ms ecoch time.
 example timeslice object:
 Name                           Value
 ----                           -----
@@ -85,7 +85,7 @@ Function get-timeslices () {
     Param(
         [parameter(Mandatory = $true)] $start,
         [parameter(Mandatory = $true)] $end,
-        [parameter(Mandatory = $false)] $intervalms = (1000 * 60 * 60)
+        [parameter(Mandatory = $false)] [long]$intervalms = (1000 * 60 * 60)
     )
 
     $startEpocUtc = get-epochDate -epochDate $start
@@ -108,9 +108,9 @@ Function get-timeslices () {
         }
 
         $slices = $slices + @{ 
-            'start'       = $s; 
-            'end'         = $e; 
-            'intervalms'  = $intervalms; 
+            'start'       = [long]$s; 
+            'end'         = [long]$e; 
+            'intervalms'  = [long]$intervalms; 
             "startString" = get-DateStringFromEpoch -epoch $s; 
             "endString"   = get-DateStringFromEpoch -epoch $e 
         }
@@ -140,9 +140,9 @@ function sumotime([string]$time) {
     else { Write-Error "invalid sumo timespec must be m s h d (minutes, seconds, hours or days" }
     $t = $time -replace 'h|m|d|s|-', ''
 
-    [bigint]$offset = ($t -as [int] ) * $multiplier 
-    $now = [bigint][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s)) 
-    return [bigint]($now - $offset)
+    [long]$offset = ($t -as [int] ) * $multiplier 
+    $now = [long][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s)) 
+    return [long]($now - $offset)
 }
 # this function would evaluate sumo time range expressions such as -15m or -1h to -5m
 # note we return 1s 10 digit epoc times (not ms epcotimes)
@@ -167,10 +167,10 @@ function sumolast($last) {
 
 function epocvalidation ($epoc) {
     if ($epoc.toString() -match '[0-9]{13}' ) {
-        return [bigint]($epoc / 1000)
+        return [long]($epoc / 1000)
     }
     elseif ($epoc.toString() -match '[0-9]{10}' ) {
-        return [bigint]($epoc )
+        return [long]($epoc )
     }
     else {
         write-error "epoc $epoc failed validation"
@@ -238,8 +238,8 @@ PSObject for the search job which as id and link properties.
 function New-SearchQuery {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter()][bigint]$from,
-        [parameter()][bigint]$to,
+        [parameter()][long]$from,
+        [parameter()][long]$to,
         [parameter()][string]$query,   
         [parameter()][string]$file, 
         [parameter()][string]$last,
@@ -251,7 +251,7 @@ function New-SearchQuery {
 
     )
 
-    $utcNow = [bigint][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s)) * 1000
+    $utcNow = [long][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s)) * 1000
 
     # we must have a valid query
     if ($query) {
