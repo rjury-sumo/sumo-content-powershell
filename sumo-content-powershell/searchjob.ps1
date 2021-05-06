@@ -257,7 +257,7 @@ function New-SearchQuery {
     if ($query) {
     }
     elseif ($file) {
-        $query = Get-Content -Path $file -Raw
+        [string]$query = Get-Content -Path $file -Raw
     }
     else {
         Write-Error "New-SearchJob requires either -query or -file"
@@ -654,7 +654,7 @@ function New-SearchBatchJob {
     if ($query) {
     }
     elseif ($file) {
-        $query = Get-Content -Path $file -Raw
+        [string]$query = Get-Content -Path $file -Raw
     }
     else {
         Write-Error "New-SearchJob requires either -query or -file"
