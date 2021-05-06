@@ -679,6 +679,11 @@ function New-SearchBatchJob {
     $i = 0
     $executed = 0
     $errors = 0
+    $messageCount=0
+    $recordCount=0
+    $pendingWarnings=@{}
+    $pendingErrors=@{}
+
 
     foreach ($slice in $timeslices) {
         $i = $i + 1
@@ -694,6 +699,27 @@ function New-SearchBatchJob {
                 write-verbose "writing output to: $jobpath"
                 $result | convertto-json | out-file -filepath $jobpath
                 $executed = $executed + 1 
+                if ($result.messagecount) { $messageCount=$result.messageCount+ 0}
+                if ($result.recordcount) { $recordcount=$result.recordcount}
+                if ($result.pendingWarnings) { 
+                    foreach ($warning in $result.pendingWarnings) {
+                        if($pendingWarnings["$warning"]) {
+                            $pendingWarnings["$warning"]=$pendingWarnings["$warning"] + 1
+                        } else {
+                            $pendingWarnings["$warning"]=1
+                        }
+                    }
+                }
+
+                if ($result.pendingErrors) { 
+                    foreach ($error in $result.pendingErrors) {
+                        if($pendingErrors["$error"]) {
+                            $pendingErrors["$error"]=$pendingErrors["$error"] + 1
+                        } else {
+                            $pendingErrors["$error"]=1
+                        }
+                    }
+                }
             }
         }
         catch {
@@ -702,7 +728,11 @@ function New-SearchBatchJob {
             $errors = $errors + 1
         }
     }
-    write-host "REPORT: queries: $i executed: $executed errors: $errors"
+    write-host "REPORT: queries: $i executed: $executed errors: $errors records: $recordcount messages: $messageCount"
+    write-host "Warnings: $($pendingWarnings | Out-String)"
+    write-host "Errors: $($pendingErrors | Out-String)"
+
+    write-host "QUERY Executed: `n`n$query" 
 
     return "$outputPath/jobs/$batchjob"
 }
