@@ -690,14 +690,14 @@ function New-SearchBatchJob {
         Write-Host "$i  from: $($slice['startString'])    to: $($slice['endString'])    file: $outputPath/jobs/$batchjob/queries/query_$($slice['start'])_$($slice['end']).json"
         try {
             $sliceQuery = new-searchQuery -query $query -from $slice['start'] -to $slice['end'] $query -byReceiptTime $byReceiptTime -autoParsingMode $autoParsingMode -sumo_session $sumo_session -dryrun $true #-verbose
-            $sliceQuery | convertto-json | out-file -filepath "$outputPath/jobs/$batchjob/queries/query_$($slice['start'])_$($slice['end']).json"
+            $sliceQuery | convertto-json -depth 10 | out-file -filepath "$outputPath/jobs/$batchjob/queries/query_$($slice['start'])_$($slice['end']).json"
 
             if ($dryrun -eq $false ) {
                 write-host "Executing job: $i from $($slice['startString']) end $($slice['endString'])"
                 $result = get-SearchJobResult -query $sliceQuery -sumo_session $sumo_session -poll_secs $poll_secs -max_tries $max_tries -return $return
                 $jobpath = "$outputPath/jobs/$batchjob/completed/query_$($slice['start'])_$($slice['end']).json"
                 write-verbose "writing output to: $jobpath"
-                $result | convertto-json | out-file -filepath $jobpath
+                $result | convertto-json -depth 10| out-file -filepath $jobpath
                 $executed = $executed + 1 
                 if ($result.messagecount) { $messageCount=$result.messageCount+ 0}
                 if ($result.recordcount) { $recordcount=$result.recordcount}
