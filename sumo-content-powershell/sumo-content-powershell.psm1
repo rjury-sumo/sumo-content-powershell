@@ -219,7 +219,7 @@ function invoke-sumo {
 
     if ($response.statuscode -gt 0 ) {
         if ($response.statuscode -gt 399) {
-            Write-Error "invoke-sumo $uri returned: $($response.statuscode) $($response.content)"
+            Write-Error "invoke-sumo $uri returned: $($response.statuscode) StatusDescription $($response.StatusDescription) `n$($response.content)" -ErrorAction Stop
             return $response
         }
 
@@ -4257,8 +4257,126 @@ function get-scheduledViews {
 ######################################################### searchjob.ps1 functions ##############################################################
 # an alternative to the sumologic powerhshell sdk start-searchjob
 
-Function get-epochDate ($epochDate) { 
-    [timezone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($epochDate)) 
+<#
+.SYNOPSIS
+returns an epch time in ms or not from a date string provided.
+
+.PARAMETER epochDate
+Optinoal date, if not provided returns now
+
+.PARAMETER format
+can be auto in which case powershell tries default casting or a foramt string for ParseExact.
+
+.OUTPUTS
+long object as a ms or non ms ecoch time.
+
+#>
+
+Function get-epochDate () { 
+    Param(
+        [parameter(Mandatory = $false)][string] $epochDate,
+        [parameter(Mandatory = $false)][string] $format = 'auto', # or say 'MM/dd/yyyy HH:mm:ss',
+        [parameter(Mandatory = $false)][bool] $ms = $true
+
+    )
+    if ($epochDate) {
+        try { 
+            if ($format -eq 'auto') {
+                $date = [datetime]$epochDate
+            }
+            else {
+                $date = [Datetime]::ParseExact($epochDate, $format, $null)
+            }
+            $dateUTC = $date.ToUniversalTime()
+            [int]$epoch = Get-Date $dateUTC -UFormat %s
+        }
+        catch {
+            Write-Error "An error occurred parsing $epochDate using format string: $format"
+            Write-Error $_.ScriptStackTrace
+        }
+    }
+    else {
+        $epoch = [int][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s))
+    }
+    if ($ms) { [long]$epoch = $epoch * 1000 }
+    return $epoch
+}
+
+# return a date string represenation of a epochtime
+Function get-DateStringFromEpoch ($epoch) { 
+    if ($epoch.toString() -match '[0-9]{13,14}' ) {
+        $epoch = [long]($epoch / 1000)
+    }
+    return [string][timezone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($epoch)) 
+}
+
+# an alternative to the sumologic powerhshell sdk start-searchjob
+
+<#
+.SYNOPSIS
+Returns an array of start and end times. ideally to run a query on.
+
+.PARAMETER start
+Optinoal date, if not provided returns now
+
+.PARAMETER end
+can be auto in which case powershell tries default casting or a foramt string for ParseExact.
+
+.PARAMETER intervalms
+an interval for timeslices expressessed as ms. default is 1 hour
+
+.OUTPUTS
+long object as a ms or non ms ecoch time.
+example timeslice object:
+Name                           Value
+----                           -----
+interval_ms                    3600000
+startString                    04/05/2021 00:00:00
+endString                      04/05/2021 01:00:00
+start                          1617537600000
+end                            1617541200000
+
+#>
+
+Function get-timeslices () { 
+    Param(
+        [parameter(Mandatory = $true)] $start,
+        [parameter(Mandatory = $true)] $end,
+        [parameter(Mandatory = $false)] [long]$intervalms = (1000 * 60 * 60)
+    )
+
+    $startEpocUtc = get-epochDate -epochDate $start
+    $endEpochUtc = get-epochDate -epochDate $end
+
+    $slices = @()
+    $remaining = $endEpochUtc - $startEpocUtc
+    $s = $startEpocUtc
+    Write-Verbose "$start $startEpocUtc $end $endEpochUtc $s $remaining"
+
+    while ($remaining -gt 0) {
+        $e = $s + $intervalms
+
+        if ($e -gt $endEpochUtc) { 
+            $e = $endEpochUtc;
+            $intervalms = $endEpochUtc - $s
+        }
+        else {
+            $e = $s + $intervalms
+        }
+
+        $slices = $slices + @{ 
+            'start'       = [long]$s; 
+            'end'         = [long]$e; 
+            'intervalms'  = [long]$intervalms; 
+            "startString" = get-DateStringFromEpoch -epoch $s; 
+            "endString"   = get-DateStringFromEpoch -epoch $e 
+        }
+
+        $s = $e + 0
+        $remaining = $endEpochUtc - $e
+    }
+
+    return $slices
 }
 
 # note we return 1s 10 digit epoc times (not ms epcotimes)
@@ -4266,18 +4384,22 @@ function sumotime([string]$time) {
     
     if ($time -match 'm') {
         $multiplier = 60 
-    } elseif ($time -match 's') {
+    }
+    elseif ($time -match 's') {
         $multiplier = 1
-    } elseif ($time -match 'h') {
+    }
+    elseif ($time -match 'h') {
         $multiplier = 60 * 60 
-    } elseif ($time -match 'd') {
+    }
+    elseif ($time -match 'd') {
         $multiplier = 60 * 60 * 24
-    } else { Write-Error "invalid sumo timespec must be m s h d (minutes, seconds, hours or days"}
-    $t = $time -replace 'h|m|d|s|-',''
+    }
+    else { Write-Error "invalid sumo timespec must be m s h d (minutes, seconds, hours or days" }
+    $t = $time -replace 'h|m|d|s|-', ''
 
-    [bigint]$offset = ($t -as [int] ) * $multiplier 
-    $now =  [bigint][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s)) 
-    return [bigint]($now - $offset)
+    [long]$offset = ($t -as [int] ) * $multiplier 
+    $now = [long][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s)) 
+    return [long]($now - $offset)
 }
 # this function would evaluate sumo time range expressions such as -15m or -1h to -5m
 # note we return 1s 10 digit epoc times (not ms epcotimes)
@@ -4296,16 +4418,16 @@ function sumolast($last) {
         Write-Error "Sumo last expression failed validation must be -<digit>[hmsd] or -<range><space>-<range> where range is -<digit>[hmsd]"
         return $false, $false
     }
-    return $from,$to
+    return $from, $to
 }
 
 
 function epocvalidation ($epoc) {
     if ($epoc.toString() -match '[0-9]{13}' ) {
-        return [bigint]($epoc / 1000)
+        return [long]($epoc / 1000)
     }
     elseif ($epoc.toString() -match '[0-9]{10}' ) {
-        return [bigint]($epoc )
+        return [long]($epoc )
     }
     else {
         write-error "epoc $epoc failed validation"
@@ -4342,8 +4464,15 @@ Supply an aboslute epoc end time
 .PARAMETER TimeZone
 Time zone used for time range query defaults to UTC
 
+.PARAMETER byReceiptTime
+string boolean Define as true to run the search using receipt time. By default, searches do not run by receipt time.
+
+.PARAMETER autoParsingMode
+This enables dynamic parsing, when specified as intelligent, Sumo automatically runs field extraction on your JSON log messages when you run a search. By default, searches run in performance mode.
+
 .PARAMETER dryrun
 if set to true function returns the query object that wouuld be submitted as -body
+if set to false starts the search job and add's an id property to the return object.
 
 .PARAMETER sumo_session
 Specify a session, defaults to $sumo_session
@@ -4366,27 +4495,26 @@ PSObject for the search job which as id and link properties.
 function New-SearchQuery {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
-        [parameter()][bigint]$from,
-        [parameter()][bigint]$to,
+        [parameter()][long]$from,
+        [parameter()][long]$to,
         [parameter()][string]$query,   
         [parameter()][string]$file, 
         [parameter()][string]$last,
         [parameter()][string]$timeZone = 'UTC',
         [parameter()][string]$byReceiptTime = 'False',
         [parameter()][string]$autoParsingMode = 'performance',
-        [parameter(mandatory = $false)][bool]$dryrun = $false,
+        [parameter(mandatory = $false)][bool]$dryrun = $true,
         [Parameter(Mandatory = $false)][array]$substitutions
-
 
     )
 
-    $utcNow = [bigint][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s)) * 1000
+    $utcNow = [long][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s)) * 1000
 
     # we must have a valid query
     if ($query) {
     }
     elseif ($file) {
-        $query = Get-Content -Path $file -Raw
+        [string]$query = Get-Content -Path $file -Raw
     }
     else {
         Write-Error "New-SearchJob requires either -query or -file"
@@ -4399,7 +4527,7 @@ function New-SearchQuery {
     }
 
     if ($last) { 
-        $from,$to = sumolast($last)
+        $from, $to = sumolast($last)
         if ($from -and $to ) {} else {
             Write-Error "sumo -last value vailed validation"
             return $null
@@ -4408,7 +4536,7 @@ function New-SearchQuery {
     }
     elseif ($from -and $to ) {
         $from = epocvalidation($from)
-        $to = epocvalication($to)
+        $to = epocvalidation($to)
         if ($from -and $to) {
             Write-Verbose "from and to passed validation"
         }
@@ -4433,17 +4561,18 @@ function New-SearchQuery {
     }
 
     $body = @{
-        "query"    = $query
-        "from"     = "$from"
-        "to"       = "$to"
-        "timeZone" = $timeZone
-        "byReceiptTime" = $byReceiptTime
+        "query"           = $query
+        "from"            = "$from"
+        "to"              = "$to"
+        "timeZone"        = $timeZone
+        "byReceiptTime"   = $byReceiptTime
         "autoParsingMode" = $autoParsingMode
     }
 
     if ($dryrun ) {
         return $body
-    } else {
+    }
+    else {
         return (invoke-sumo -path "search/jobs" -method 'POST' -session $sumo_session  -body $body -v 'v1')
     }
 
@@ -4531,23 +4660,25 @@ function Export-SearchJobEvents {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter(Mandatory = $true)] $job, 
-        [parameter(Mandatory = $false)][string]  [ValidateSet("records","messages")] $return = "records",
+        [parameter(Mandatory = $false)][string]  [ValidateSet("records", "messages")] $return = "records",
         [parameter(Mandatory = $false)][int] $limit = 1000
 
     )
 
-        if ($job.id -and ($job.PSobject.Properties.name -match "messageCount") -and ($job.PSobject.Properties.name -match "recordCount") ) {
+    if ($job.id -and ($job.PSobject.Properties.name -match "messageCount") -and ($job.PSobject.Properties.name -match "recordCount") ) {
 
-        } else { 
-            Write-Error "passed -job object is missing required properties"
-            return @()
+    }
+    else { 
+        Write-Error "passed -job object is missing required properties"
+        return @()
     }
 
-    $offset=0
+    $offset = 0
 
     if ($return -eq "records") {
         $totalresults = $job.recordCount
-    } elseif ($return -eq "messages") {
+    }
+    elseif ($return -eq "messages") {
         $totalresults = $job.messageCount
     }
     $remaining = $totalresults
@@ -4556,10 +4687,10 @@ function Export-SearchJobEvents {
     While ($totalresults -gt 0 -and $remaining -gt 0) {
         $params = @{
             "offset" = $offset
-            "limit" = $limit
+            "limit"  = $limit
         }
         # get the page
-        $page =  (invoke-sumo -path "search/jobs/$($job.id)/$return" -method 'GET' -session $sumo_session   -v 'v1' -params $params)
+        $page = (invoke-sumo -path "search/jobs/$($job.id)/$return" -method 'GET' -session $sumo_session   -v 'v1' -params $params)
 
         $resultSet.fields = $page.fields
         $resultSet.$return = $resultSet.$return + $page.$return
@@ -4602,6 +4733,10 @@ status returns on the job result object
 records adds a records property contining the records results pages
 messages adds a messages property containing the messages results pages
 
+.EXAMPLE
+$q = New-SearchQuery -query 'error| count by _sourcecategory | limit 7' -dryrun $true -last '-15m'
+get-SearchJobResult -query $q -return status  
+
 .OUTPUTS
 PSObject for the search job which as id. May have records or messages properties.
 
@@ -4613,32 +4748,36 @@ function get-SearchJobResult {
         [parameter(Mandatory = $false)] $jobid, # job id of an existing completed job
         [parameter(Mandatory = $false)] $job, # job object
         [parameter(Mandatory = $false)][int] $poll_secs = 1,
-        [parameter(Mandatory = $false)][int] $max_tries = 60,
-        [parameter(Mandatory = $false)][string]  [ValidateSet("status","records","messages")] $return = "status"
+        [parameter(Mandatory = $false)][int] $max_tries = 120,
+        [parameter(Mandatory = $false)][string]  [ValidateSet("status", "records", "messages")] $return = "status"
 
     )
 
     if ($jobid) {
         Write-Verbose 'run by job id'
 
-    }  elseif ($job) {
+    }
+    elseif ($job) {
         Write-Verbose 'run by job object'
         if ($job.id) {
-            $jobid=$job.id
-        } else { 
+            $jobid = $job.id
+        }
+        else { 
             Write-Error 'job object has no id property';
             return $job
         }
-    }  elseif ($query ) {
+    }
+    elseif ($query ) {
         Write-Verbose 'run by query'
         Write-Verbose "query: `n$($query | convertto-json -depth 10) `n"
         $job = New-SearchJob -body $query -sumo_session $sumo_session
-        $jobid=$job.id
-    } else {
+        $jobid = $job.id
+    }
+    else {
         Write-Error 'you must provide a new -query object or -jobid of an existing job, or a -job object with id.'
     }
     
-    $tries = 0
+    $tries = 1
     $last = "none"
 
     While ($jobid -and ($max_tries -gt $tries)) {
@@ -4647,14 +4786,15 @@ function get-SearchJobResult {
         
         $job_state = get-SearchJobStatus -jobId $jobid -sumo_session $sumo_session
         if ($last -ne $job_state.state) {
-            write-host "change status: from: $last to $($job_state.state) at $($tries * $poll_seconds) seconds."
+            Write-Verbose "change status: from: $last to $($job_state.state) at $($tries * $poll_seconds) seconds."
             $last = "$($job_state.state)"
-        } else {
+        }
+        else {
             Write-Verbose  ($job_state.state)
         }
 
         if ($job_state.state -eq 'DONE GATHERING RESULTS') {
-            
+            write-host "$($job_state.state) at $($tries * $poll_seconds) seconds."
             break
         }
         else {
@@ -4666,19 +4806,194 @@ function get-SearchJobResult {
     }   
     Write-Verbose "job poll completed: status: $($job_state.state) jobId: $jobid"
     if ($job_state.state -ne 'DONE GATHERING RESULTS') {
-         Write-Error "Job failed or timed out for job: $jobid"; 
-         return 
+        Write-Error "Job failed or timed out for job: $jobid `n $($job_state | out-string)" -ErrorAction Stop; 
+        return 
     }
     $job_state  | Add-Member -NotePropertyName id -NotePropertyValue $jobid -Force
 
     if ($return -eq "messages" ) {
         $job_state | Add-Member -NotePropertyName messages -NotePropertyValue (Export-SearchJobEvents -job $job_state -return 'messages')
-    } elseif ($return -eq "records") {
+    }
+    elseif ($return -eq "records") {
         $job_state | Add-Member -NotePropertyName records -NotePropertyValue (Export-SearchJobEvents -job $job_state -return 'records')
     }
 
     return  $job_state
 }
+
+
+
+<#
+.SYNOPSIS
+Creates a query batch for repeating queries over a series of timeslices.
+
+.DESCRIPTION
+Run a query lots of times in series, useful for bulk data operationas such as export or building a view.
+Creates an output job folder for example: ./output/jobs/bf512d66-6261-4cfd-bdbc-9d0c94a86e50  
+This folder contains as queries folder of each query object to execute, and if dryrun=false each query is executed and output stored in the completed folder.
+
+.PARAMETER sumo_session
+Specify a session, defaults to $sumo_session
+
+.PARAMETER query
+the query string to run in the batch job.
+
+.PARAMETER file
+alternative to -query you can specify a file path of a query text file.
+
+.PARAMETER outputPath
+writes each job output to a path specified. Defaults to ./output
+
+.PARAMETER startTimeString
+start time  for the job
+
+.PARAMETER endTimeString
+end time  for the job
+
+.PARAMETER intervalMs
+ms intervals for batching start and end times.
+
+.PARAMETER byReceiptTime
+string boolean Define as true to run the search using receipt time. By default, searches do not run by receipt time.
+
+.PARAMETER autoParsingMode
+This enables dynamic parsing, when specified as intelligent, Sumo automatically runs field extraction on your JSON log messages when you run a search. By default, searches run in performance mode.
+
+.PARAMETER poll_secs
+default 1, the poll interval to check for job completion.
+
+.PARAMETER max_tries
+default 120, the maximumum number of poll cycles to wait for completion
+
+.PARAMETER return
+"status","records","messages"
+status returns on the job result object
+records adds a records property contining the records results pages
+messages adds a messages property containing the messages results pages
+
+.EXAMPLE
+Create a batch job of queries 
+New-SearchBatchJob -query 'error | limit 1'  -dryrun $false -return records
+
+.EXAMPLE
+batch job with more options
+New-SearchBatchJob -query 'error | limit 5' -dryrun $false -return records -startTimeString ((Get-Date).AddMinutes(-60)) -endTimeString (Get-Date) -sumo_session $sanbox
+
+.EXAMPLE
+Run a query with query string in a text file.
+New-SearchBatchJob -file './library/example.sumo' -dryrun $true  -return records -startTimeString ((Get-Date).AddMinutes(-180)) -endTimeString 'Wednesday, May 5, 2021 5:15:22 PM'
+
+.OUTPUTS
+returns the path of the batch job output.
+./output/jobs/bf512d66-6261-4cfd-bdbc-9d0c94a86e50  
+
+#>
+function New-SearchBatchJob {
+    Param(
+        [parameter()][SumoAPISession]$sumo_session = $sumo_session,
+        [parameter(Mandatory = $false)] [string]$query, 
+        [parameter(Mandatory = $false)] [string]$file, 
+        [parameter(Mandatory = $false)] [string]$outputPath = './output', 
+        [parameter(Mandatory = $false)] [string]$startTimeString = (Get-Date).AddMinutes(-60),
+        [parameter(Mandatory = $false)] [string]$endTimeString = (Get-Date), 
+        [parameter(Mandatory = $false)] [int]$intervalMs = (1000 * 60 * 60), 
+        [parameter()] [string][ValidateSet("true", "false")] $byReceiptTime = 'False',
+        [parameter()] [string][ValidateSet("performance", "intelligent")]$autoParsingMode = 'performance',
+        [parameter(Mandatory = $false)][int] $poll_secs = 1,
+        [parameter(Mandatory = $false)][int] $max_tries = 120,
+        [parameter(Mandatory = $false)][string][ValidateSet("status", "records", "messages")] $return = "status",
+        [parameter(mandatory = $false)][bool]$dryrun = $true
+    )
+
+    $batchJob = new-guid
+
+    # we must have a valid query
+    if ($query) {
+    }
+    elseif ($file) {
+        [string]$query = Get-Content -Path $file -Raw
+    }
+    else {
+        Write-Error "New-SearchJob requires either -query or -file"
+        return $null
+    }
+
+    write-host "Starting Batch Job: $batchjob at $(get-date)"
+    Write-Verbose "start: $startTimeString end: $endTimeString intervalms: $intervalMs byreceittime: $byReceiptTime autoparsemode: $autoParsingMode poll_secs: $poll_secs retries: $max_tries"
+
+    try {
+        $timeslices = get-timeslices -start $startTimeString -end $endTimeString -intervalms $intervalMs
+    }
+    catch {
+        Write-Error "An error occurred generating timeslices for $startTimeString to endTimeString with interval: intervalMs"
+        Write-Error $_.ScriptStackTrace
+    }
+
+    New-Item -path "$outputPath" -Type Directory -ErrorAction SilentlyContinue -force | out-null
+    New-Item -path "$outputPath/jobs/$batchjob/queries" -Type Directory -ErrorAction SilentlyContinue -force | out-null
+    New-Item -path "$outputPath/jobs/$batchjob/completed" -Type Directory -ErrorAction SilentlyContinue -force | out-null
+
+    $i = 0
+    $executed = 0
+    $errors = 0
+    $messageCount=0
+    $recordCount=0
+    $pendingWarnings=@{}
+    $pendingErrors=@{}
+
+
+    foreach ($slice in $timeslices) {
+        $i = $i + 1
+        Write-Host "$i  from: $($slice['startString'])    to: $($slice['endString'])    file: $outputPath/jobs/$batchjob/queries/query_$($slice['start'])_$($slice['end']).json"
+        try {
+            $sliceQuery = new-searchQuery -query $query -from $slice['start'] -to $slice['end'] $query -byReceiptTime $byReceiptTime -autoParsingMode $autoParsingMode -sumo_session $sumo_session -dryrun $true #-verbose
+            $sliceQuery | convertto-json -depth 10 | out-file -filepath "$outputPath/jobs/$batchjob/queries/query_$($slice['start'])_$($slice['end']).json"
+
+            if ($dryrun -eq $false ) {
+                write-host "Executing job: $i from $($slice['startString']) end $($slice['endString'])"
+                $result = get-SearchJobResult -query $sliceQuery -sumo_session $sumo_session -poll_secs $poll_secs -max_tries $max_tries -return $return
+                $jobpath = "$outputPath/jobs/$batchjob/completed/query_$($slice['start'])_$($slice['end']).json"
+                write-verbose "writing output to: $jobpath"
+                $result | convertto-json -depth 10| out-file -filepath $jobpath
+                $executed = $executed + 1 
+                if ($result.messagecount) { $messageCount=$result.messageCount+ 0}
+                if ($result.recordcount) { $recordcount=$result.recordcount}
+                if ($result.pendingWarnings) { 
+                    foreach ($warning in $result.pendingWarnings) {
+                        if($pendingWarnings["$warning"]) {
+                            $pendingWarnings["$warning"]=$pendingWarnings["$warning"] + 1
+                        } else {
+                            $pendingWarnings["$warning"]=1
+                        }
+                    }
+                }
+
+                if ($result.pendingErrors) { 
+                    foreach ($error in $result.pendingErrors) {
+                        if($pendingErrors["$error"]) {
+                            $pendingErrors["$error"]=$pendingErrors["$error"] + 1
+                        } else {
+                            $pendingErrors["$error"]=1
+                        }
+                    }
+                }
+            }
+        }
+        catch {
+            Write-Error "An error occurred executing query slice from $($slice['startString']) end $($slice['endString'])"
+            Write-Error $_.ScriptStackTrace
+            $errors = $errors + 1
+        }
+    }
+    write-host "`nREPORT: queries: $i executed: $executed errors: $errors records: $recordcount messages: $messageCount"
+    write-host "Warnings: $($pendingWarnings | Out-String)"
+    write-host "Errors: $($pendingErrors | Out-String)"
+
+    write-host "QUERY Executed: `n`n$query`n" 
+
+    return "$outputPath/jobs/$batchjob"
+}
+
 
 ######################################################### servicewhitelist.ps1 functions ##############################################################
 
@@ -5126,6 +5441,8 @@ function Get-Users {
 #Export-ModuleMember -Cmdlet Set-RoleUserById
 #Export-ModuleMember -Cmdlet get-scheduledViews
 #Export-ModuleMember -Cmdlet get-epochDate 
+#Export-ModuleMember -Cmdlet get-DateStringFromEpoch 
+#Export-ModuleMember -Cmdlet get-timeslices 
 #Export-ModuleMember -Function sumotime
 #Export-ModuleMember -Function sumolast
 #Export-ModuleMember -Function epocvalidation 
@@ -5134,6 +5451,7 @@ function Get-Users {
 #Export-ModuleMember -Cmdlet get-SearchJobStatus
 #Export-ModuleMember -Cmdlet Export-SearchJobEvents
 #Export-ModuleMember -Cmdlet get-SearchJobResult
+#Export-ModuleMember -Cmdlet New-SearchBatchJob
 #Export-ModuleMember -Cmdlet get-sources
 #Export-ModuleMember -Cmdlet get-sourceById
 #Export-ModuleMember -Cmdlet Get-Users
