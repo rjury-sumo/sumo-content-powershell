@@ -151,4 +151,30 @@ Describe "sumo-content-apis-tests" {
         }
     }
 
+    Context "searchjob" -tag "searchjob" {
+
+        It "get-epochDate -epochDate '04/05/2021 12:26:00' -format 'MM/dd/yyyy HH:mm:ss' returns 1617582360000"  {
+            get-epochDate -epochDate '04/05/2021 12:26:00'  -format 'MM/dd/yyyy HH:mm:ss'| Should -Be '1617582360000'
+        }
+
+        It "get-epochDate retuns ms same as get-date to utc epoch" {
+           get-epochDate | Should -Be (([int][double]::Parse((Get-Date (get-date).touniversaltime() -UFormat %s))) * 1000)
+           
+        }
+
+        It "get-epochDate -epochDate '04/05/2021 12:26:00' auto returns 1617582360000"  {
+            get-epochDate -epochDate '04/05/2021 12:26:00' -format 'auto' | Should -Be '1617582360000'
+        }
+
+        It "get-DateStringFromEpoch  -epoch 1620176608000 returns 05/05/2021 13:03:28" {
+            get-DateStringFromEpoch  -epoch 1620176608000 | Should -Be '05/05/2021 13:03:28'
+        }
+
+        It "get-timeslices returns valid timeslice array" {
+            $sample = '[{"start":1617537600000,"startString":"04/05/2021 00:00:00","intervalms":3600000,"end":1617541200000,"endString":"04/05/2021 01:00:00"},{"start":1617541200000,"startString":"04/05/2021 01:00:00","intervalms":3600000,"end":1617544800000,"endString":"04/05/2021 02:00:00"}]'
+            (get-timeslices -start '04/05/2021 00:00:00' -end '04/05/2021 02:00:00' | convertto-json -compress ) | Should -Be $sample
+
+        }
+    }
+
 }
