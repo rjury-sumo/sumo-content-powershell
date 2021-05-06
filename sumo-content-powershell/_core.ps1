@@ -219,7 +219,7 @@ function invoke-sumo {
 
     if ($response.statuscode -gt 0 ) {
         if ($response.statuscode -gt 399) {
-            Write-Error "invoke-sumo $uri returned: $($response.statuscode) $($response.content)"
+            Write-Error "invoke-sumo $uri returned: $($response.statuscode) StatusDescription $($response.StatusDescription) `n$($response.content)" -ErrorAction Stop
             return $response
         }
 
