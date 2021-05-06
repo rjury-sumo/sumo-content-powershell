@@ -520,7 +520,7 @@ function get-SearchJobResult {
         Write-Error 'you must provide a new -query object or -jobid of an existing job, or a -job object with id.'
     }
     
-    $tries = 0
+    $tries = 1
     $last = "none"
 
     While ($jobid -and ($max_tries -gt $tries)) {
@@ -529,7 +529,7 @@ function get-SearchJobResult {
         
         $job_state = get-SearchJobStatus -jobId $jobid -sumo_session $sumo_session
         if ($last -ne $job_state.state) {
-            write-host "change status: from: $last to $($job_state.state) at $($tries * $poll_seconds) seconds."
+            Write-Verbose "change status: from: $last to $($job_state.state) at $($tries * $poll_seconds) seconds."
             $last = "$($job_state.state)"
         }
         else {
@@ -537,7 +537,7 @@ function get-SearchJobResult {
         }
 
         if ($job_state.state -eq 'DONE GATHERING RESULTS') {
-            
+            write-host "$($job_state.state) at $($tries * $poll_seconds) seconds."
             break
         }
         else {
@@ -549,7 +549,7 @@ function get-SearchJobResult {
     }   
     Write-Verbose "job poll completed: status: $($job_state.state) jobId: $jobid"
     if ($job_state.state -ne 'DONE GATHERING RESULTS') {
-        Write-Error "Job failed or timed out for job: $jobid"; 
+        Write-Error "Job failed or timed out for job: $jobid `n $($job_state | out-string)" -ErrorAction Stop; 
         return 
     }
     $job_state  | Add-Member -NotePropertyName id -NotePropertyValue $jobid -Force
@@ -728,11 +728,11 @@ function New-SearchBatchJob {
             $errors = $errors + 1
         }
     }
-    write-host "REPORT: queries: $i executed: $executed errors: $errors records: $recordcount messages: $messageCount"
+    write-host "`nREPORT: queries: $i executed: $executed errors: $errors records: $recordcount messages: $messageCount"
     write-host "Warnings: $($pendingWarnings | Out-String)"
     write-host "Errors: $($pendingErrors | Out-String)"
 
-    write-host "QUERY Executed: `n`n$query" 
+    write-host "QUERY Executed: `n`n$query`n" 
 
     return "$outputPath/jobs/$batchjob"
 }
