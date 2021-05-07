@@ -728,12 +728,20 @@ function New-SearchBatchJob {
             $errors = $errors + 1
         }
     }
-    write-host "`nREPORT: queries: $i executed: $executed errors: $errors records: $recordcount messages: $messageCount"
-    write-host "Warnings: $($pendingWarnings | Out-String)"
-    write-host "Errors: $($pendingErrors | Out-String)"
 
-    write-host "QUERY Executed: `n`n$query`n" 
+    $result  = @{
+        "queries" = $i;
+        "executed" =  $executed;
+        "errors"  = $errors;
+        "messageCount" = $messageCount;
+        "recordCount" = $recordCount;
+        "pendingWarnings" = $pendingWarnings;
+        "pendingErrors" = $pendingErrors;
+        "outputPath" = "$outputPath/jobs/$batchjob";
+        "query" = $query;
+    }
 
-    return "$outputPath/jobs/$batchjob"
+    Write-Verbose ($result | convertto-json | Out-String)
+    return $result 
 }
 
