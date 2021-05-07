@@ -4884,8 +4884,18 @@ Run a query with query string in a text file.
 New-SearchBatchJob -file './library/example.sumo' -dryrun $true  -return records -startTimeString ((Get-Date).AddMinutes(-180)) -endTimeString 'Wednesday, May 5, 2021 5:15:22 PM'
 
 .OUTPUTS
-returns the path of the batch job output.
-./output/jobs/bf512d66-6261-4cfd-bdbc-9d0c94a86e50  
+returns the path of the batch job output and other properites as an object
+for example:
+Name                           Value                                                                                                                         ----                           -----                                                                                                                         
+errors                         2
+recordCount                    0
+outputPath                     ./output/jobs/d3f059e6-c77f-432d-8631-29915c66d0a0
+messageCount                   0
+queries                        2
+query                          some query
+executed                       2
+pendingWarnings                {}
+pendingErrors                  {Field org_id not found, please check the spelling and try again. (520)}
 
 #>
 function New-SearchBatchJob {
@@ -4906,6 +4916,8 @@ function New-SearchBatchJob {
     )
 
     $batchJob = new-guid
+    $yyyymmdd = (get-date).tostring("yyyyMMdd_hhmmss")
+    $batchJob = "$($yyyymmdd)_$($batchJob)"
 
     # we must have a valid query
     if ($query) {
@@ -4975,6 +4987,7 @@ function New-SearchBatchJob {
                         } else {
                             $pendingErrors["$error"]=1
                         }
+                        $errors = $errors + 1
                     }
                 }
             }
@@ -4985,13 +4998,21 @@ function New-SearchBatchJob {
             $errors = $errors + 1
         }
     }
-    write-host "`nREPORT: queries: $i executed: $executed errors: $errors records: $recordcount messages: $messageCount"
-    write-host "Warnings: $($pendingWarnings | Out-String)"
-    write-host "Errors: $($pendingErrors | Out-String)"
 
-    write-host "QUERY Executed: `n`n$query`n" 
+    $result  = @{
+        "queries" = $i;
+        "executed" =  $executed;
+        "errors"  = $errors;
+        "messageCount" = $messageCount;
+        "recordCount" = $recordCount;
+        "pendingWarnings" = $pendingWarnings;
+        "pendingErrors" = $pendingErrors;
+        "outputPath" = "$outputPath/jobs/$batchjob";
+        "query" = $query;
+    }
 
-    return "$outputPath/jobs/$batchjob"
+    Write-Verbose ($result | convertto-json | Out-String)
+    return $result 
 }
 
 
