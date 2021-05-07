@@ -718,6 +718,7 @@ function New-SearchBatchJob {
                         } else {
                             $pendingErrors["$error"]=1
                         }
+                        $errors = $errors + 1
                     }
                 }
             }
