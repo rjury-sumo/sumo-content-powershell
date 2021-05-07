@@ -12,7 +12,7 @@
 RootModule = 'sumo-content-powershell.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.6'
+ModuleVersion = '1.0.7'
 #
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -128,6 +128,7 @@ HelpInfoURI = 'https://github.com/rjury-sumo/sumo-content-powershell'
 # DefaultCommandPrefix = ''
 
 }
+
 
 
 

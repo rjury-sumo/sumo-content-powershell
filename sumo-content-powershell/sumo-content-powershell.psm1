@@ -4782,23 +4782,29 @@ function get-SearchJobResult {
 
     While ($jobid -and ($max_tries -gt $tries)) {
         $tries = $tries + 1     
-        Write-Verbose "polling job $jobid. try: $tries of $max_tries"
+        Write-Verbose "polling job $jobid try: $tries of $max_tries"
         
-        $job_state = get-SearchJobStatus -jobId $jobid -sumo_session $sumo_session
-        if ($last -ne $job_state.state) {
-            Write-Verbose "change status: from: $last to $($job_state.state) at $($tries * $poll_seconds) seconds."
-            $last = "$($job_state.state)"
+        try {
+            $job_state = get-SearchJobStatus -jobId $jobid -sumo_session $sumo_session
+            if ($last -ne $job_state.state) {
+                Write-Verbose "change status: from: $last to $($job_state.state) at $($tries * $poll_secs) seconds."
+                $last = "$($job_state.state)"
+            }
+            else {
+                Write-Verbose  ($job_state.state)
+            }
+    
+            if ($job_state.state -eq 'DONE GATHERING RESULTS') {
+                write-host "job: $jobid $($job_state.state) after $($tries * $poll_secs) seconds."
+                break
+            }
+            else {
+                Start-Sleep -Seconds $poll_secs
+            }
         }
-        else {
-            Write-Verbose  ($job_state.state)
-        }
-
-        if ($job_state.state -eq 'DONE GATHERING RESULTS') {
-            write-host "$($job_state.state) at $($tries * $poll_seconds) seconds."
-            break
-        }
-        else {
-            Start-Sleep -Seconds $poll_secs
+        catch {
+            Write-Error "Job status poll error: $jobid `n $($job_state | out-string)"
+            Write-Error $_.ScriptStackTrace
         }
 
         # add the jobid 
@@ -4806,7 +4812,7 @@ function get-SearchJobResult {
     }   
     Write-Verbose "job poll completed: status: $($job_state.state) jobId: $jobid"
     if ($job_state.state -ne 'DONE GATHERING RESULTS') {
-        Write-Error "Job failed or timed out for job: $jobid `n $($job_state | out-string)" -ErrorAction Stop; 
+        Write-Error "Job failed or timed out for job: $jobid `n $($job_state | out-string) after $($tries * $poll_secs) seconds." -ErrorAction Stop; 
         return 
     }
     $job_state  | Add-Member -NotePropertyName id -NotePropertyValue $jobid -Force
