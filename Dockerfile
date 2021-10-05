@@ -1,4 +1,4 @@
-FROM microsoft/powershell:latest
+FROM mcr.microsoft.com/powershell
 
 # default environment processing
 #ENV SUMO_ACCESS_ID=$SUMO_ACCESS_ID

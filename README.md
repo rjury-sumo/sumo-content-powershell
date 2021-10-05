@@ -15,10 +15,15 @@ Before the module is rebuilt you can 'dot source' the current code.
 
 For example here we open the 
 ```
-docker build -t sumo_agent .
-docker run --env SUMO_DEPLOYMENT=au --env SUMO_ACCESS_ID=$SUMO_ACCESS_ID --env SUMO_ACCESS_KEY=$SUMO_ACCESS_KEY -it sumologic-content-powershell:latest
+docker build -t sumo-content-powershell:latest .
 
-. ./dot.source.ps1
+```
+
+to run
+
+```
+docker run --env SUMO_DEPLOYMENT=au --env SUMO_ACCESS_ID=$SUMO_ACCESS_ID --env SUMO_ACCESS_KEY=$SUMO_ACCESS_KEY -it rick-ury/sumo-content-powershell:latest
+
 new-ContentSession
 get-PersonalFolder
 ```
@@ -65,6 +70,7 @@ fieldextrationrules
 fields
 folders
 healthevents
+heirarchies
 ingestbudgets
 logssearchestimatedusage
 lookuptables
