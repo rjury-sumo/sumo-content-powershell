@@ -5,7 +5,7 @@ BeforeAll {
     $endpoint = 'https://api.au.sumologic.com'
 
     $sumo = new-ContentSession -endpoint $endpoint    
-    $sumo_admin =  $sumo = new-ContentSession -endpoint $endpoint  -isadminmode 'true'
+    $sumo_admin = new-ContentSession -endpoint $endpoint  -isadminmode 'true'
 
     $resource = @{}
 
@@ -70,18 +70,18 @@ Describe "sumo-content-apis-tests" {
         }
 
         It "get-folderContent global defaults to global"  {
-            (get-folderContent).name | Should -Match 'Personal|[rR]ick'
+            ((get-folderContent) | where {$_.name -match 'Personal|[rR]ick'}).count | Should -BeGreaterOrEqual 1
 
         }
 
         It "get-folderContent global defaults to global"  {
             (get-folderContent -type global)[0].itemType | Should -Be 'Folder'
-            (get-folderContent -type global).name | Should -Match 'Personal|[rR]ick'
+            ((get-folderContent -type global -sumo_session $sumo ) | where {$_.name -match 'Personal|[rR]ick'}).count  | Should -BeGreaterOrEqual 1
 
         }
 
         It "get-foldercontent adminRecommended returns adminRecommended"  {
-            $f = get-folder -id (get-PersonalFolder).id
+            $f = get-folder -id (get-PersonalFolder -sumo_session $sumo).id
             $f.id| Should -Match '[A-F0-9]{16}'
             $f.itemType | Should -Be 'Folder'
         }
@@ -169,8 +169,9 @@ Describe "sumo-content-apis-tests" {
         }
 
         It "get-timeslices returns valid timeslice array" {
-            $sample = '[{"start":1617537600000,"startString":"04/05/2021 00:00:00","intervalms":3600000,"end":1617541200000,"endString":"04/05/2021 01:00:00"},{"start":1617541200000,"startString":"04/05/2021 01:00:00","intervalms":3600000,"end":1617544800000,"endString":"04/05/2021 02:00:00"}]'
-            (get-timeslices -start '04/05/2021 00:00:00' -end '04/05/2021 02:00:00' | convertto-json -compress ) | Should -Be $sample
+            $sample = '[{"start":1617537600000,"startString":"04/05/2021 00:00:00","intervalms":3600000,"end":1617541200000,"endString":"04/05/2021 01:00:00"},{"start":1617541200000,"startString":"04/05/2021 01:00:00","intervalms":3600000,"end":1617544800000,"endString":"04/05/2021 02:00:00"}]' | ConvertFrom-Json
+            $ts = (get-timeslices -start '04/05/2021 00:00:00' -end '04/05/2021 02:00:00' | convertto-json | ConvertFrom-Json ) 
+            (Compare-Object -ReferenceObject $sample -DifferenceObject $ts ).count  | Should -Be 0
 
         }
     }
@@ -179,6 +180,13 @@ Describe "sumo-content-apis-tests" {
         It "get awso name should be 'AWS Observability'" {
             (Get-hierarchies | where {$_.name -eq 'AWS Observability'}).name | Should -Be 'AWS Observability'
 
+        }
+    }
+
+    Context "heirarchies" -tag "hierarchies" {
+        It "get hierarchy by id returns a hierarchy" {
+            $id = (Get-hierarchies | where {$_.name -eq 'AWS Observability'}).id
+            (Get-hierarchyById -id $id ).name | Should -Be 'AWS Observability'
         }
     }
 
