@@ -121,8 +121,7 @@ This folder contains files with sumo api endpoints and automation to bulk genera
 - update *.ps1 code in ./sumo-content-powershell as required
 - (ideally)write some pester tests 
 - ensure tests pass
-- run ./_build.ps1
-- update the manifest file such as version setc. Note:  build.ps1 will output the 'exported functions' arrray for the manifest.
+- run ./_build.ps1. this will update the psm and psd files.
 
 # TODO
 write more tests!
