@@ -46,6 +46,8 @@ public class SumoAPISession
 "@ 
 }
 
+$global:scriptDir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+
 <#
     .DESCRIPTION
     Create a new sumo session object.
@@ -151,6 +153,9 @@ function getQueryString([hashtable]$form) {
     .PARAMETER returnResponse
     boolean - if set to true will return the whole response object rather than .Content converted to JSON
 
+    .PARAMETER filePath
+    path of a file to execute where required action is -outfile to this path.
+
     .EXAMPLE
     invoke-sumo -path "content/folders/personal"
 
@@ -170,14 +175,15 @@ function invoke-sumo {
         [parameter()]$body,
         [parameter()][string] $v = "v2",
         [parameter()][Hashtable] $headers,
-        [parameter()][bool]$returnResponse = $false
+        [parameter()][bool]$returnResponse = $false #,
+  #      [parameter()][string] $filepath
     )
 
     if ($session -and $session.endpoint) { 
         if ($headers) { } else {
             $headers = @{
                 "content-type" = "application/json";
-                "accept"       = "application/json";
+                "accept"       = "*/*";
                 "isAdminMode"  = $session.isAdminMode
             }
         }
@@ -205,8 +211,11 @@ function invoke-sumo {
             write-verbose "body: `n$body"
             $response = Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers -Body $body -SkipHttpErrorCheck
     
-        }
-        else {
+  #      }
+ #       elseif ($filepath) {
+ #           $response = Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers -SkipHttpErrorCheck -OutFile "$filepath"
+
+        } else {
             $response = Invoke-WebRequest -Uri $uri -method $method -WebSession $session.WebSession -Headers $headers -SkipHttpErrorCheck
         }
     }
@@ -217,19 +226,14 @@ function invoke-sumo {
 
     Write-Verbose ($response | Out-String)
 
-    if ($response.statuscode -gt 0 ) {
-        if ($response.statuscode -gt 399) {
-            Write-Error "invoke-sumo $uri returned: $($response.statuscode) StatusDescription $($response.StatusDescription) `n$($response.content)" -ErrorAction Stop
-            return $response
-        }
-
-    }
-    else {
-        Write-Error "invoke-sumo $uri request failed"
-        return @()
+    #if ($response.statuscode -gt 0 -and $returnResponse -ne 1) {
+    if ($response.statuscode -gt 399) {
+        Write-Error "invoke-sumo $uri returned: $($response.statuscode) StatusDescription $($response.StatusDescription) `n$" -ErrorAction Stop
+        return $response
     }
 
     if ($returnResponse) {
+        Write-Verbose "returning whole response object"
         return $response
     }
     else {
