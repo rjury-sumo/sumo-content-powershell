@@ -11,3 +11,4 @@ crash.log
 output/*
 .DS_Store
 .DS_Store
+sumo-content-powershell/exports/*
