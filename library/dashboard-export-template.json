@@ -1,0 +1,10 @@
+{
+    "action": {
+      "actionType": "DirectDownloadReportAction"
+    },
+    "exportFormat": "Pdf",
+    "timezone": "America/Los_Angeles",
+    "template": {
+      "templateType": "DashboardTemplate"
+    }
+  }

@@ -1,8 +1,12 @@
+
+
 BeforeAll {
-    foreach ($f in dir ./sumo-content-powershell/*.ps1) { if ($f.name -inotmatch 'build') {. $f.fullname}  }
+
     if ($env:SUMO_ACCESS_ID -notmatch '[a-zA-Z1-9]{14}') { write-error "SUMO_ACCESS_ID or KEY is not set"; exit }
     if ($env:SUMO_ACCESS_KEY -notmatch '[a-zA-Z1-9]{64}') { write-error "SUMO_ACCESS_ID or KEY is not set"; exit }
     $endpoint = 'https://api.au.sumologic.com'
+    
+    foreach ($f in dir ./sumo-content-powershell/*.ps1) { if ($f.name -inotmatch 'build') {. $f.fullname}  }
 
     $sumo = new-ContentSession -endpoint $endpoint    
     $sumo_admin = new-ContentSession -endpoint $endpoint  -isadminmode 'true'
@@ -189,5 +193,86 @@ Describe "sumo-content-apis-tests" {
             (Get-hierarchyById -id $id ).name | Should -Be 'AWS Observability'
         }
     }
+    
+    Context "dashboard-export" -tag "dashboard-export" {
 
+        $resource = @{}
+
+        foreach ($f in dir ./library/*.json ) {
+            $json = Get-Content -Path "$($f.FullName)" 
+            $name = $f.Name -replace "\.json",""
+            $resource["$name"] = $json | convertfrom-json -depth 100
+        }
+
+        
+        It "can trigger a dashboard pdf export job by id and poll status" {
+            $script:exportbody = $resource['dashboard-export-template']
+            $script:exportbody.template | Add-Member -NotePropertyName id -NotePropertyValue 'TlVzZzMS2yRowxt3VdZah2uMXTDDKCLUVPvAG4pe5u32ywgDLJ2i3cBPHLbB'
+            $exportJob = New-DashboardReportJob -body $exportbody -sumo_session $sumo_session #-verbose
+            $script:jobid = $exportjob.id
+            write-host "export: $jobid "
+            $jobid | Should -Match '.+'
+        }
+
+        It "can poll status of a job by id" {
+            #write-host "export: $jobid "
+
+            $exportstatus=Get-DashboardReportJobsStatusById -jobid $jobid -sumo_session $sumo_session #-verbose
+            Write-verbose "status: $($exportstatus | out-string)"
+            $exportstatus.status | Should -Match '.+'
+        }
+
+        It "can poll a job to completion" {
+            $max_tries = 30
+            $poll_secs =1
+            $tries = 1
+            $last = "none"
+            write-verbose "job id is: $jobid"
+            
+            While ($jobid -and ($max_tries -gt $tries)) {
+                $tries = $tries + 1     
+                Write-Verbose "polling export job $jobid try: $tries of $max_tries"
+                
+                try {
+                    $job_state = Get-DashboardReportJobsStatusById -jobid $jobid -sumo_session $sumo_session
+                    if ($last -ne $job_state.status) {
+                        Write-Verbose "change status: from: $last to $($job_state.status) at $($tries * $poll_secs) seconds."
+                        $last = "$($job_state.status)"
+                    }
+                    else {
+                        Write-Verbose  ($job_state.status)
+                    }
+            
+                    if ($job_state.status -eq 'Success') {
+                        write-host "job: $jobid $($job_state.status) after $($tries * $poll_secs) seconds."
+                        break
+                    }
+                    else {
+                        Start-Sleep -Seconds $poll_secs
+                    }
+                }
+                catch {
+                    Write-Error "Job status poll error: $jobid `n $($job_state | out-string)"
+                    Write-Error $_.ScriptStackTrace
+                }
+            }   
+            Write-Verbose "job poll completed: status: $($job_state.status) jobId: $jobid"
+            if ($job_state.status -ne 'Success') {
+                Write-Error "Job failed or timed out for job: $jobid `n $($job_state | out-string) after $($tries * $poll_secs) seconds." -ErrorAction Stop; 
+                return 
+            } else {
+                write-host "export job $jobid is: ($job_state.status) after $($tries * $poll_secs) seconds)"
+            }
+        
+        $job_state.status | Should -Be 'Success'
+        
+        }
+
+        It "can return an export job result" {
+            $export_result = Get-DashboardReportJobsResultById -jobid $jobid -sumo_session $sumo_session
+            $export_result.http_status | Should -Be 200
+            write-host "exported: $($export_result.filepath)"
+        }
+
+    }
 }
