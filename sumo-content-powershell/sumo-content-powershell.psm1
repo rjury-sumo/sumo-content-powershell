@@ -847,7 +847,7 @@ function get-collectorById {
         [parameter(Mandatory = $true)] $id
         
     )
-    return (invoke-sumo -path "collectors/$id" -session $sumo_session -v $v ).collector
+    return (invoke-sumo -path "collectors/$id" -session $sumo_session -v $v ) #.collector
 }
 
 
