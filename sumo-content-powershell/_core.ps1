@@ -156,6 +156,9 @@ function getQueryString([hashtable]$form) {
     .PARAMETER filePath
     path of a file to execute where required action is -outfile to this path.
 
+    .PARAMETER keyName
+    Many API objects return one top level key containing an array of the actual objects. To simplify later coding we can just return the children of this object. For exmaple 'dashboards'
+
     .EXAMPLE
     invoke-sumo -path "content/folders/personal"
 
@@ -165,6 +168,8 @@ function getQueryString([hashtable]$form) {
     .EXAMPLE
     invoke-sumo -path "content/path" -params @{ 'path' = $path;}
 
+    .EXAMPLE
+    invoke-sumo -path "dashboards" -parans @{ 'limit' = 10} -keyName 'dashboards'
 #>
 function invoke-sumo {
     param(
@@ -175,7 +180,8 @@ function invoke-sumo {
         [parameter()]$body,
         [parameter()][string] $v = "v2",
         [parameter()][Hashtable] $headers,
-        [parameter()][bool]$returnResponse = $false #,
+        [parameter()][bool]$returnResponse = $false, #,
+        [parameter()][string] $keyName
   #      [parameter()][string] $filepath
     )
 
@@ -246,6 +252,12 @@ function invoke-sumo {
             If ($r.GetType().BaseType.name -match "Array") { 
                 return $r
             }
+            elseif ( ($keyName) -and $r.$keyName) {
+                Write-Verbose ('using keyName: ' + $keyName)
+                return $r.$keyName
+            }
+            # TODO... convert all the upstream calls below here to -keyName 'key'
+            # and remove this nasty code here.
             elseif ($r.data) { 
                 return $r.data 
             }
