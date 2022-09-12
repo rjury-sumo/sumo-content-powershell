@@ -115,6 +115,11 @@ Describe "sumo-content-apis-tests" {
 
     Context "dashboards" -tag "dashboards" {
 
+        It "get-dashboards limit 1 returns 1 dashboard" {
+            $dashboards=get-dashboards -limit 1
+            $dashboards.Count | Should -Be 1
+        }
+
         It "return clone of 'to' dashboard copying properties from 'from' object"  {
             $d1 = $resource['dashboard']
             $d1.title = 'old'
