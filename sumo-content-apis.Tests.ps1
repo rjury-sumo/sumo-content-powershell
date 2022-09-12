@@ -46,6 +46,13 @@ Describe "sumo-content-apis-tests" {
         }
     }
 
+    Context "core" -Tag "core" {
+
+        It "invoke-sumo returns response object with 404 status code for invalid request" {
+            ( invoke-sumo -path "dashboards/abc" -session $sumo_session -ErrorAction SilentlyContinue).StatusCode | Should -Be 404
+        }
+    }
+
     Context "functions" -tag "functions" {
 
         It "getquerystring returns urlencoded string"  {
