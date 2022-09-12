@@ -287,4 +287,10 @@ Describe "sumo-content-apis-tests" {
         }
 
     }
+
+    Context "slos" -tag "slos" {
+        It "Get-SlosRootFolder returns and id" {
+            (Get-SlosRootFolder).id | Should -not -BeNullOrEmpty
+        }
+    }
 }
