@@ -1,0 +1,50 @@
+{
+    "id": "00000000000002C8",
+    "name": "SLO",
+    "description": "Root node of SLOs",
+    "version": 0,
+    "createdAt": "2022-09-12T04:31:18.679Z",
+    "createdBy": "000000000057B6D2",
+    "modifiedAt": "2022-09-12T04:31:18.679Z",
+    "modifiedBy": "000000000057B6D2",
+    "parentId": null,
+    "contentType": "Folder",
+    "type": "SlosLibraryFolderResponse",
+    "isSystem": false,
+    "isMutable": false,
+    "permissions": [],
+    "children": [
+        {
+            "id": "00000000000002C9",
+            "name": "Demo",
+            "description": "Demo SLO Folder",
+            "version": 0,
+            "createdAt": "2022-09-12T04:32:23.282Z",
+            "createdBy": "000000000057B6D2",
+            "modifiedAt": "2022-09-12T04:32:23.282Z",
+            "modifiedBy": "000000000057B6D2",
+            "parentId": "00000000000002C8",
+            "contentType": "Folder",
+            "type": "SlosLibraryBaseResponse",
+            "isSystem": false,
+            "isMutable": true,
+            "permissions": []
+        },
+        {
+            "id": "00000000000002CA",
+            "name": "Demo Logs SLO",
+            "description": "A fake slo that counts the % of cloudtrail events with an errorcode",
+            "version": 0,
+            "createdAt": "2022-09-12T04:36:19.099Z",
+            "createdBy": "000000000057B6D2",
+            "modifiedAt": "2022-09-12T04:36:19.099Z",
+            "modifiedBy": "000000000057B6D2",
+            "parentId": "00000000000002C8",
+            "contentType": "Slo",
+            "type": "SlosLibraryBaseResponse",
+            "isSystem": false,
+            "isMutable": true,
+            "permissions": []
+        }
+    ]
+}
