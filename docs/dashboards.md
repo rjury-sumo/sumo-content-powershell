@@ -1,7 +1,7 @@
 # dashboards
 This API is a bit odd in two ways:
 1. it uses the ids you see in the sumo ui for a dashboard NOT the library dashboad ids.
-2. there is no 'get all the dashboards' api call so you must use this with the library.
+2. there is no 'get all the dashboards' api call so you must use this with the library. There is a get-dashboards call but this is only for the user personal folder and has a limit of 100.
 
 # ids
 The dashboard ids required are the ones you see in the URI in sumo such as: ABCDEwxyze6odId5iT8uONiSHtITxRCbhsXNEJ3mtvUxcChTdRHCaIQNsd8.
@@ -36,6 +36,11 @@ parentId    : 0000000000FEDCBA
 permissions : {GrantEdit, View, Edit, GrantView…}
 ```
 note the id in hex - but we cannot from here map to a dashboards id other than by opening it in the ui and noting the url.
+
+# Get Your Own Dashboards (Up to 100)
+```
+get-dashboards
+```
 
 # Getting dashboard content
 use the get. 
