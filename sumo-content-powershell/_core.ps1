@@ -234,7 +234,19 @@ function invoke-sumo {
 
     #if ($response.statuscode -gt 0 -and $returnResponse -ne 1) {
     if ($response.statuscode -gt 399) {
-        Write-Error "invoke-sumo $uri returned: $($response.statuscode) StatusDescription $($response.StatusDescription) `n$" -ErrorAction Stop
+        Write-Error "invoke-sumo $uri returned: $($response.statuscode) StatusDescription $($response.StatusDescription)" 
+        $r = $response.content | ConvertFrom-Json -Depth 100
+
+        if ($r) {
+
+            if ($r.id) {
+                Write-Error "invoke-sumo error id: $($r.id)"
+            }
+
+            if ($r.errors) {
+                Write-Error "invoke sumo errors: $($r.errors)"
+            }
+        }
         return $response
     }
 
@@ -246,6 +258,7 @@ function invoke-sumo {
         $r = $response.content | ConvertFrom-Json -Depth 100
 
         if ($r) {
+
             #Write-Verbose "`nResponse Content: `n$($response.content)"
             Write-Verbose "return object type: $($r.GetType().BaseType.name)"
             # often there is an embedded data object
