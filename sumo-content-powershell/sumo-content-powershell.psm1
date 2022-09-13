@@ -2173,7 +2173,7 @@ function Get-Fields {
  #>
  
  
- function Replace-FieldById {
+ function Remove-FieldById {
  
     Param(
          [parameter()][SumoAPISession]$sumo_session = $sumo_session,
@@ -5900,7 +5900,7 @@ function Get-Users {
 #Export-ModuleMember -Cmdlet Get-FieldBuiltinById
 #Export-ModuleMember -Cmdlet Get-FieldsDropped
 #Export-ModuleMember -Cmdlet Get-FieldsQuota
-#Export-ModuleMember -Cmdlet Replace-FieldById
+#Export-ModuleMember -Cmdlet Remove-FieldById
 #Export-ModuleMember -Cmdlet Get-FieldById
 #Export-ModuleMember -Cmdlet Set-FieldDisableById
 #Export-ModuleMember -Cmdlet Set-FieldEnableById
