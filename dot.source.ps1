@@ -1,1 +1,1 @@
-foreach ($f in dir ./sumo-content-powershell/*.ps1) { if ($f.name -inotmatch 'build') {. $f.fullname}  }
+foreach ($f in Get-ChildItem ./sumo-content-powershell/*.ps1) { if ($f.name -inotmatch 'build') {. $f.fullname}  }

@@ -428,7 +428,7 @@ function New-MultipartContent {
 
     $bodyLines = ( 
         "--$boundary",
-        "Content-Disposition: form-data; name=`"file`"; filename=`"$((dir $filepath).Name)`"",
+        "Content-Disposition: form-data; name=`"file`"; filename=`"$((Get-ChildItem $filepath).Name)`"",
         "Content-Type: application/octet-stream$LF",
         $fileEnc,
         "--$boundary--$LF" 

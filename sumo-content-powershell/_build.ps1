@@ -1,6 +1,6 @@
 Get-Content -Path _core.ps1 | out-file ./sumo-content-powershell.psm1 -Encoding ascii
 
-foreach ($f in dir ./*.ps1) { 
+foreach ($f in Get-ChildItem ./*.ps1) { 
     if ($f.name -notmatch '_' ) {
         "`n######################################################### $($f.name) functions ##############################################################" | out-file ./sumo-content-powershell.psm1 -Encoding ascii -Append
         Get-Content -Path "$($f.fullname)" | out-file ./sumo-content-powershell.psm1 -Encoding ascii -Append

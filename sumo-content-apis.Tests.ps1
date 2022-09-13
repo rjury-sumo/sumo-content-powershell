@@ -6,14 +6,14 @@ BeforeAll {
     if ($env:SUMO_ACCESS_KEY -notmatch '[a-zA-Z1-9]{64}') { write-error "SUMO_ACCESS_ID or KEY is not set"; exit }
     $endpoint = 'https://api.au.sumologic.com'
     
-    foreach ($f in dir ./sumo-content-powershell/*.ps1) { if ($f.name -inotmatch 'build') {. $f.fullname}  }
+    foreach ($f in Get-ChildItem ./sumo-content-powershell/*.ps1) { if ($f.name -inotmatch 'build') {. $f.fullname}  }
 
     $sumo = new-ContentSession -endpoint $endpoint    
     $sumo_admin = new-ContentSession -endpoint $endpoint  -isadminmode 'true'
 
     $resource = @{}
 
-    foreach ($f in dir ./library/*.json ) {
+    foreach ($f in Get-ChildItem ./library/*.json ) {
         $json = Get-Content -Path "$($f.FullName)" 
         $name = $f.Name -replace "\.json",""
         $resource["$name"] = $json | convertfrom-json -depth 100
@@ -210,7 +210,7 @@ Describe "sumo-content-apis-tests" {
 
         $resource = @{}
 
-        foreach ($f in dir ./library/*.json ) {
+        foreach ($f in Get-ChildItem ./library/*.json ) {
             $json = Get-Content -Path "$($f.FullName)" 
             $name = $f.Name -replace "\.json",""
             $resource["$name"] = $json | convertfrom-json -depth 100
