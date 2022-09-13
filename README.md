@@ -94,7 +94,7 @@ healthevents
 heirarchies
 ingestbudgets
 logssearchestimatedusage
-lookuptables
+lookuptables (partial)
 metricalertmonitors
 metricsearch
 monitors
@@ -103,6 +103,7 @@ permissions
 roles
 scheduledviews
 searchjob
+slos (partial)
 sources
 users
 ```
@@ -157,3 +158,4 @@ missing apis such as:
 - passwordpolicy
 - dynamicparsing
 - serviceallowlist
+
