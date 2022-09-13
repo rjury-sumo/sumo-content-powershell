@@ -9,5 +9,5 @@ Get-hierarchyById
 - body should be a hierarchy object such as library/heirarchy_rum.json
 - cannot have same name as existing.
 
-## Delete-hierarchyById
+## Remove-hierarchyById
 

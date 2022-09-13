@@ -42,7 +42,7 @@ function New-hierarchy {
     return (invoke-sumo -path "entities/hierarchies" -method POST -session $sumo_session -v 'v1' -body $body )
 }
  
-function Delete-hierarchyById {
+function Remove-hierarchyById {
  
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,

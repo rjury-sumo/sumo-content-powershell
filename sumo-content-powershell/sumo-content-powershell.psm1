@@ -2651,7 +2651,7 @@ function New-hierarchy {
     return (invoke-sumo -path "entities/hierarchies" -method POST -session $sumo_session -v 'v1' -body $body )
 }
  
-function Delete-hierarchyById {
+function Remove-hierarchyById {
  
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
@@ -5916,7 +5916,7 @@ function Get-Users {
 #Export-ModuleMember -Cmdlet Get-HealthEventResources
 #Export-ModuleMember -Cmdlet Get-hierarchies
 #Export-ModuleMember -Cmdlet New-hierarchy
-#Export-ModuleMember -Cmdlet Delete-hierarchyById
+#Export-ModuleMember -Cmdlet Remove-hierarchyById
 #Export-ModuleMember -Cmdlet Get-hierarchyById
 #Export-ModuleMember -Cmdlet Get-IngestBudgetsv1
 #Export-ModuleMember -Cmdlet New-IngestBudgetsv1
