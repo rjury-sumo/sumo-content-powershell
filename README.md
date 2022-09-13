@@ -31,7 +31,7 @@ For info on apis that exist and swagger definition see: https://api.au.sumologic
 You can import the module as below. The only folder you need is the [sumo-content-powershell](./sumo-content-powershell) folder.
 
 ```
-Import-Module ./sumo-content-powershell/sumo-content-powershell.psd1
+Import-Module ./sumo-content-powershell/sumologic-content.psd1
 ```
 
 # dot sourcing

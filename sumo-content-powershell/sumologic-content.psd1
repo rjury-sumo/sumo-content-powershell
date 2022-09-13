@@ -9,10 +9,10 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'sumo-content-powershell.psm1'
+RootModule = 'sumologic-content.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.12'
+ModuleVersion = '1.0.13'
 #
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -128,6 +128,7 @@ HelpInfoURI = 'https://github.com/rjury-sumo/sumo-content-powershell'
 # DefaultCommandPrefix = ''
 
 }
+
 
 
 
