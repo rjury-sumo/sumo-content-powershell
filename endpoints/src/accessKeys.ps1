@@ -13,7 +13,7 @@
 #>
 
 
-function Get-AccessKeys {
+function Get-AccessKey {
 
    Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session
@@ -57,7 +57,7 @@ function New-AccessKey {
 #>
 
 
-function Get-AccessKeysPersonal {
+function Get-AccessKeyPersonal {
 
    Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session

@@ -4,7 +4,7 @@ param ([string]$output = "object", $endpoint='au')
 $sumo=new-contentsession -endpoint $endpoint
 
 $users = Get-Users
-$keys = Get-AccessKeys   
+$keys = Get-AccessKey   
 
 $keymap = @{}
 

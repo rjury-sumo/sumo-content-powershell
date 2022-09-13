@@ -510,7 +510,7 @@ function batchReplace {
 #>
 
 
-function Get-AccessKeys {
+function Get-AccessKey {
 
     Param(
          [parameter()][SumoAPISession]$sumo_session = $sumo_session
@@ -554,7 +554,7 @@ function Get-AccessKeys {
  #>
  
  
- function Get-AccessKeysPersonal {
+ function Get-AccessKeyPersonal {
  
     Param(
          [parameter()][SumoAPISession]$sumo_session = $sumo_session
@@ -5845,9 +5845,9 @@ function Get-Users {
 #Export-ModuleMember -Cmdlet New-MultipartContent
 #Export-ModuleMember -Function getArrayIndex 
 #Export-ModuleMember -Function batchReplace
-#Export-ModuleMember -Cmdlet Get-AccessKeys
+#Export-ModuleMember -Cmdlet Get-AccessKey
 #Export-ModuleMember -Cmdlet New-AccessKey
-#Export-ModuleMember -Cmdlet Get-AccessKeysPersonal
+#Export-ModuleMember -Cmdlet Get-AccessKeyPersonal
 #Export-ModuleMember -Cmdlet Remove-AccessKeyById
 #Export-ModuleMember -Cmdlet Set-AccessKeyById
 #Export-ModuleMember -Cmdlet Get-Apps
