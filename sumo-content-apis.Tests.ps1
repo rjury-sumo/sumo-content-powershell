@@ -292,5 +292,9 @@ Describe "sumo-content-apis-tests" {
         It "Get-SlosRootFolder returns and id" {
             (Get-SlosRootFolder).id | Should -not -BeNullOrEmpty
         }
+
+        It "Get-SloTree returns at least one object" {
+            (Get-SloTree ).Count | Should -BeGreaterThan 0
+        }
     }
 }

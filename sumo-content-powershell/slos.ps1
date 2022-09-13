@@ -96,13 +96,22 @@ function Get-SloByPath {
 
  <#
     .DESCRIPTION
-    Recursively return the enitre SLO Tree
+    Recursively return the entire SLO Tree starting at the id node (or root)
 
     .PARAMETER sumo_session
     Specify a session, defaults to $sumo_session
 
     .PARAMETER id
-    Id of parent node to start recursion. If empty will start are root SLO folder.
+    Id of parent node to start recursion. If empty will start are root SLO folder using Get-SlosRootFolder.
+
+    .PARAMETER slos
+    This is used for recursion to pass the parent object
+
+    .PARAMETER childrenProperty
+    defaults to $True. Set to false which removes the children property from the output for each node.
+    
+    .PARAMETER pathProperty
+    defaults to $True. For each node a path property is added using Get-SloPathById
 
     .OUTPUTS
     PSCustomObject.
@@ -113,7 +122,9 @@ function Get-SloTree {
     Param(
          [parameter()][SumoAPISession]$sumo_session = $sumo_session,
          [parameter(mandatory = $False)]$id,
-         [parameter(Mandatory = $False)][Array]$slos = @()
+         [parameter(Mandatory = $False)][Array]$slos = @(),
+         [parameter(Mandatory = $False)][bool]$childrenProperty = $True,
+         [parameter(Mandatory = $False)][bool]$pathProperty = $True
      )
 
      if ($id -eq $null) {
@@ -122,11 +133,17 @@ function Get-SloTree {
         $node = Get-SloById -id $id
      }
 
-    $node | Add-Member -MemberType NoteProperty -Name path -Value ((Get-SloPathById -id $node.id).path)
+    if ($pathProperty -eq $True) {
+         $node | Add-Member -MemberType NoteProperty -Name path -Value ((Get-SloPathById -id $node.id).path)
+    } 
 
     Write-Verbose "SLO Node: $($node.id) children: $($node.children.count) path $($node.path) slds: $($slos.count)"
 
-    $slos += ($node | Select-Object -ExcludeProperty children) 
+    if ($childrenProperty -eq $False) {
+        $slos += ($node | Select-Object -ExcludeProperty children) 
+    } else {
+        $slos += $node    
+    }
 
     if ( $node.children.count -gt 0) {
         foreach ($child in $node.children) {

@@ -32,6 +32,7 @@ For each node the path is added as an addional property making this suitable for
 see: examples/slotree.ps1
 
 return all slos and folders from the root node recursively.
+By default this adds a path property to each node (remove with pathProperty $False)
 
 ```
 Get-SloTree 
@@ -41,3 +42,10 @@ return all slos and folders starting from a folder id
 ```
 Get-SloTree -id 00000000000002C9
 ```
+
+Get a list of all SLOs but not folders to export later to csv.
+```
+Get-SloTree  | where {$_.contentType -eq 'Slo'}
+
+```
+
