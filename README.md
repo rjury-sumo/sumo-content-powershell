@@ -3,6 +3,30 @@ powershell commands for interacting with content ,  folder and other APIs.
 
 For info on apis that exist and swagger definition see: https://api.au.sumologic.com/docs/#section/Getting-Started
 
+[collectors.md](docs/collectors.md)
+[connection_and_sessions.md](docs/connection_and_sessions.md)
+[content.md](docs/content.md)
+[dashboardreports.md](docs/dashboardreports.md)
+[dashboards.md](docs/dashboards.md)
+[extractionrules.md](docs/extractionrules.md)
+[fields.md](docs/fields.md)
+[folders.md](docs/folders.md)
+[healthevents.md](docs/healthevents.md)
+[hierarchies.md](docs/hierarchies.md)
+[ingestbudgets.md](docs/ingestbudgets.md)
+[logsearchestimatedusage.md](docs/logsearchestimatedusage.md)
+[lookuptables.md](docs/lookuptables.md)
+[metricsearch.md](docs/metricsearch.md)
+[monitors.md](docs/monitors.md)
+[partitions.md](docs/partitions.md)
+[permissions.md](docs/permissions.md)
+[roles.md](docs/roles.md)
+[searchjob.md](docs/searchjob.md)
+[setup.md](docs/setup.md)
+[slos.md](docs/slos.md)
+[sources.md](docs/sources.md)
+[users.md](docs/users.md)
+
 # setup
 You can import the module as below. The only folder you need is the [sumo-content-powershell](./sumo-content-powershell) folder.
 
@@ -10,21 +34,19 @@ You can import the module as below. The only folder you need is the [sumo-conten
 Import-Module ./sumo-content-powershell/sumo-content-powershell.psd1
 ```
 
-# dot sourcing current code
-Before the module is rebuilt you can 'dot source' the current code. 
-
-For example here we open the 
+# dot sourcing
+An alternative is to 'dot source' the module code directly for example: 
 ```
-docker build -t sumo-content-powershell:latest .
-
+foreach ($f in dir ./sumo-content-powershell/*.ps1) { if ($f.name -inotmatch 'build') {. $f.fullname}  }
 ```
 
-to run
-
+# running in docker
+You can use the pre-compiled docker image (based on powershell and includes pester)
+To run
 ```
-docker run --env SUMO_DEPLOYMENT=au --env SUMO_ACCESS_ID=$SUMO_ACCESS_ID --env SUMO_ACCESS_KEY=$SUMO_ACCESS_KEY -it rick-ury/sumo-content-powershell:latest
+docker run --env SUMO_DEPLOYMENT=au --env SUMO_ACCESS_ID=$SUMO_ACCESS_ID --env SUMO_ACCESS_KEY=$SUMO_ACCESS_KEY -it rickjury/sumo-content-powershell:latest
 
-new-ContentSession
+$sumo_session = new-ContentSession
 get-PersonalFolder
 ```
 
@@ -39,7 +61,6 @@ Default env vars for endpoint and credentials.
 The session is saved as a global variable which subsequent commands will default to sumo_session=$sumo_session
 
 Get a content item by id or path.
-
 ```
 new-ContentSession 
 ```
@@ -112,7 +133,7 @@ docker run --env SUMO_DEPLOYMENT=au --env SUMO_ACCESS_ID=$SUMO_ACCESS_ID --env S
 
 # Build notes
 ## Tests
-both code solutions have a pester test file with some rather incomplete test coverage!
+A pester test file with some rather incomplete test coverage!
 
 ## Endpoints
 This folder contains files with sumo api endpoints and automation to bulk generate api code. This generated code in ./src is the basis for most of the module code.
