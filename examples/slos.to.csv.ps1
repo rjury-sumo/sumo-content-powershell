@@ -1,9 +1,11 @@
+param ([bool]$dryrun = $false, $session = $sumo_session)
+
 # path for lookups will be personalfolder/lookups and we assume we already created this folder with admin manage and global read permission
 $lookupName = 'slos_config'
-$lookupParent = (get-PersonalFolder).id
+$lookupParent = $session.PersonalFolderId
 
 # test if the lookup table already exists
-$existinglookup = (Get-ContentFolderById -id (get-PersonalFolder).id).children | where { $_.name -eq $lookupName }
+$existinglookup = (Get-ContentFolderById -sumo_session $session -id $lookupParent).children | where { $_.name -eq $lookupName }
 
 if ( $existinglookup) {
     # we can go ahead and import to update
@@ -12,16 +14,23 @@ if ( $existinglookup) {
 }
 else {
     # we need to create it
-    write-host "Creating new lookups since it does not exist."
-    $newid = New-LookupTable -name $lookupName -parentFolderId $lookupParent -description 'A lookup table of slo config' -primaryKeys @($key) -columns $lookupColumns #-Verbose -dryrun $true
+    if ($dryrun -eq $false) {
+        write-host "Creating new lookups since it does not exist."
+        $newid = New-LookupTable -name $lookupName -parentFolderId $lookupParent -description 'A lookup table of slo config' -primaryKeys @($key) -columns $lookupColumns -sumo_session $session #-Verbose -dryrun $true
+    }
+    else {
+        write-host "dryrun New-LookupTable -name $lookupName -parentFolderId $lookupParent -description 'A lookup table of slo config'"
+    }
+
 }
 
 write-host "getting list of SLOs from API..."
-$slotree = Get-SloTree  | where { $_.contentType -eq 'Slo' } 
+$slotree = Get-SloTree -sumo_session $session | where { $_.contentType -eq 'Slo' } 
 
 # the key column for the lookup table
 $key = 'id'
-
+$keys = @("id", "name", "description", "version", "createdat", "createdby", "modifiedat", "modifiedby", "parentid", "contenttype", "type", "issystem", "ismutable", "permissions", "signaltype", "compliance", "indicator", "service", "application", "sloversion", "path"
+)
 # where is tmp (can vary on pwsh vs windows)
 $tempPath = (New-TemporaryFile).fullName | split-path -Parent
 $csvPath = "$tempPath/sumo_slo_lookup.csv"
@@ -31,7 +40,7 @@ $output = @()
 
 foreach ($slo in $slotree) {
     # construct a custom object because some fields contain embedded objects that don't export csv properly
-    $row = $slo | Select-Object -Property id,name,description,version
+    $row = $slo | Select-Object -Property id, name, description, version
     $row | Add-Member -MemberType NoteProperty -Name "createdat" -value $slo.createdat ;
     $row | Add-Member -MemberType NoteProperty -Name "createdby" -value $slo.createdby ;
     $row | Add-Member -MemberType NoteProperty -Name "modifiedat" -value $slo.modifiedat ;
@@ -56,8 +65,13 @@ foreach ($slo in $slotree) {
 write-host "output slo csv to: $csvPath"
 $output | convertto-csv | out-file -FilePath "$csvPath" -Force
 
-$job = (Set-LookupTableFromCsv -id 0000000000B6D3DF -filepath $csvPath).id
-write-host "Started lookup table update job $job "
+if ($dryrun -eq $false) {
+    $job = (Set-LookupTableFromCsv -id $id -filepath $csvPath -sumo_session $session).id
+    write-host "Started lookup table update job $job "
+}
+else {
+    write-host "dryrun: would Set-LookupTableFromCsv -id $id -filepath $csvPath"
+}
 
 #Write-Output $output
 

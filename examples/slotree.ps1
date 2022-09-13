@@ -1,6 +1,6 @@
 $slos = Get-SloTree 
 
-$output = 'csv'
+$output = 'json'
 if ($output -eq 'json') {
     Write-Output $slos | convertto-json -Depth 10
 } else {
