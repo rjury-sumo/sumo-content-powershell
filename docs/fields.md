@@ -12,7 +12,7 @@ Get-FieldsBuiltin
 Get-FieldBuiltinById
 Get-FieldsDropped
 Get-FieldsQuota
-Delete-FieldById
+Replace-FieldById
 Get-FieldById
 Set-FieldDisableById
 Set-FieldEnableById

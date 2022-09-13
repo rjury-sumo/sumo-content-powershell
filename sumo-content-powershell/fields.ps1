@@ -144,7 +144,7 @@ function Get-Fields {
  #>
  
  
- function Delete-FieldById {
+ function Replace-FieldById {
  
     Param(
          [parameter()][SumoAPISession]$sumo_session = $sumo_session,
