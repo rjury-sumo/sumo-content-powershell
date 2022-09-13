@@ -1,4 +1,5 @@
 FROM --platform=linux/x86_64 mcr.microsoft.com/powershell:latest
+#FROM --platform=$BUILDPLATFORM mcr.microsoft.com/powershell:latest
 
 # default environment processing
 #ENV SUMO_ACCESS_ID=$SUMO_ACCESS_ID
