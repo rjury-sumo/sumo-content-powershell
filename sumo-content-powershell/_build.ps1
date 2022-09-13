@@ -39,4 +39,5 @@ $new_manifest = (Get-Content -Path ./sumologic-content.psd1 -raw ) -replace "Mod
 $new_manifest = $new_manifest -replace 'FunctionsToExport =[^\n\r]+',$functionstoexport
 $new_manifest | Out-File ./sumologic-content.psd1 -Encoding ascii
 
-# Publish-Module -Path ".\MyModule" -NugetAPIKey "GUID" -WhatIf -Verbose
+
+
