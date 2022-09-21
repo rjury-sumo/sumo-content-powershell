@@ -216,7 +216,7 @@ function get-folderContent {
         $result = get-folderJobResult -job $jobid  -type $type  -sumo_session $sumo_session
     }
     else { Write-Error 'Job failed or timed out'; return $false }
-    Write-Verbose ($result | convertto-json)
+    Write-Verbose ($result | convertto-json -depth 10)
     if ($type -eq 'global') { return $result } else { return $result }
 }
 
