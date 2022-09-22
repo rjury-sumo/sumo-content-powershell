@@ -1,10 +1,12 @@
 # folders
-note isAdminMode can change what you return for some of these calls.
 
-common folder properties used:
-children,createdBy,id,modifiedAt,name,permissions,createdAt,description,itemType,modifiedBy,parentId
+## Peculiar Things to Note About This API
+Note: For certain APIs such as the Content api to access admin recommended you must use isAdminMode true however you don't need to use isAdminMode to use the dedicated endpoints for exporting the top level Global or Admin Recommended object.
 
-Note if you want to recurse only the get by **id** includes children in the returned object!
+get-folder -id xxx returns an object with a children property but the Content API equivalent by path does not if that path is a folder.
+
+## Getting a child list for the global or admin recommended folders
+There are a number of calls required so use get-folderGlobalContent  (see below)
 
 ## Get A folder
 Get an item by id using either of these:
@@ -26,14 +28,24 @@ return the personal folder object.
 get-PersonalFolder  
 ```
 
-## admin recommended and global folders
-You must start an export job for these. If you get-adminrecommended/get-global you get back just the id of the export job.
-This will return a list of children content objects that do NOT include a children property.
+## get-folderGlobalContent: admin recommended and global folders
+Accessing global folders is complex vs personal folder so to simplify you can simply call get-folderGlobalContent
 
 ```
 get-folderGlobalContent -type global
 get-folderGlobalContent -type adminRecommended
 ``` 
+
+This will return a list of children content objects that do NOT include a children property so you must use get-folder on those to recurse.
+
+## behind the scenes
+this will start an export job using the global or admin recommended endpoint using say: ```https://api.au.sumologic.com/api/v2/content/folders/adminRecommended```
+
+You must start an export job for these. If you get-adminrecommended/get-global you get back **just the id of the export job**.
+You must then poll the job till completion and return an actual id and child object.
+One the job is completed you can request the result for example: ```https://api.au.sumologic.com/api/v2/content/folders/adminRecommended/{jobId}/result ```
+
+
 
 ## create a folder
 use new-folder specifying the parent folder id.
