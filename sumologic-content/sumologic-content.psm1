@@ -2333,7 +2333,7 @@ function get-GlobalFolder {
     param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session
     )
-    return invoke-sumo -path "content/folders/global" -session $sumo_session
+    return invoke-sumo -path "content/folders/global" -session $sumo_session -keyName 'id'
 }
 
 <#
@@ -2356,7 +2356,7 @@ function get-adminRecommended {
     param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session
     )
-    return invoke-sumo -path "content/folders/adminRecommended" -session $sumo_session
+    return invoke-sumo -path "content/folders/adminRecommended" -session $sumo_session -keyName 'id'
 }
 
 
@@ -2453,10 +2453,10 @@ function get-folderGlobalContent {
         [parameter(Mandatory = $false)][ValidateSet('global', 'adminRecommended')][string] $type = "global"
     )
     if ($type -eq 'global') {
-        $jobid = (get-GlobalFolder -sumo_session $sumo_session).id
+        $jobid = get-GlobalFolder -sumo_session $sumo_session
     }
     else {
-        $jobid = (get-adminRecommended -sumo_session $sumo_session ).id 
+        $jobid = get-adminRecommended -sumo_session $sumo_session 
     }
 
     $tries = 0
@@ -2479,7 +2479,7 @@ function get-folderGlobalContent {
         $result = get-folderJobResult -job $jobid  -type $type  -sumo_session $sumo_session
     }
     else { Write-Error 'Job failed or timed out'; return $false }
-    Write-Verbose ($result | convertto-json)
+    Write-Verbose ($result | convertto-json -depth 10)
     if ($type -eq 'global') { return $result } else { return $result }
 }
 
