@@ -80,18 +80,18 @@ Describe "sumo-content-apis-tests" {
             (get-personalfolder).name | Should -Match 'Personal|[rR]ick'
         }
 
-        It "get-folderContent global defaults to global"  {
-            ((get-folderContent) | where {$_.name -match 'Personal|[rR]ick'}).count | Should -BeGreaterOrEqual 1
+        It "get-folderGlobalContent global defaults to global"  {
+            ((get-folderGlobalContent) | where {$_.name -match 'Personal|[rR]ick'}).count | Should -BeGreaterOrEqual 1
 
         }
 
-        It "get-folderContent global defaults to global"  {
-            (get-folderContent -type global)[0].itemType | Should -Be 'Folder'
-            ((get-folderContent -type global -sumo_session $sumo ) | where {$_.name -match 'Personal|[rR]ick'}).count  | Should -BeGreaterOrEqual 1
+        It "get-folderGlobalContent global defaults to global"  {
+            (get-folderGlobalContent -type global)[0].itemType | Should -Be 'Folder'
+            ((get-folderGlobalContent -type global -sumo_session $sumo ) | where {$_.name -match 'Personal|[rR]ick'}).count  | Should -BeGreaterOrEqual 1
 
         }
 
-        It "get-foldercontent adminRecommended returns adminRecommended"  {
+        It "get-folderGlobalContent adminRecommended returns adminRecommended"  {
             $f = get-folder -id (get-PersonalFolder -sumo_session $sumo).id
             $f.id| Should -Match '[A-F0-9]{16}'
             $f.itemType | Should -Be 'Folder'

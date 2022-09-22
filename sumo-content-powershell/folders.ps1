@@ -177,12 +177,12 @@ function get-folderJobResult {
         Specify a session, defaults to $sumo_session
     
         .EXAMPLE
-        get-folderContent -type global
+        get-folderGlobalContent -type global
     
         .OUTPUTS
         PSCustomObject. Content of the export job. 
     #>
-function get-folderContent {
+function get-folderGlobalContent {
     Param(
         [parameter()][SumoAPISession]$sumo_session = $sumo_session,
         [parameter(Mandatory = $false)][string] $poll_secs = 1,

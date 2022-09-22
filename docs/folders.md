@@ -31,8 +31,8 @@ You must start an export job for these. If you get-adminrecommended/get-global y
 This will return a list of children content objects that do NOT include a children property.
 
 ```
-get-folderContent -type global
-get-folderContent -type adminRecommended
+get-folderGlobalContent -type global
+get-folderGlobalContent -type adminRecommended
 ``` 
 
 ## create a folder
