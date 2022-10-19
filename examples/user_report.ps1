@@ -1,11 +1,11 @@
-param ([string]$output = "simplejson")
+param ([string]$output = "simpleobject",$session = (new-ContentSession) )
 
-$sumo=new-contentsession
-$users = get-users
-$roles = get-roles
+#$sumo=new-contentsession
+$users = get-users -sumo_session $session
+$roles = get-roles -sumo_session $session
 
 $usermap = @{}
-$usermapsimple = @()
+$usermapsimple = New-Object System.Collections.Generic.List[System.Object]
 
 foreach ($u in $users) {
     # get a new user object
@@ -43,7 +43,7 @@ foreach ($u in $users) {
     $current.SearchFilter = "($temp)"
 
     $usermap[$current.email] =  $current
-    $usermapsimple += @{
+    $row = [pscustomobject]@{
         "email" = $current.email;
         "firstName" = $current.firstname;
         "lastName" = $current.lastname;
@@ -53,12 +53,17 @@ foreach ($u in $users) {
         "isActive" = $current.isActive
         "lastLoginTimestamp" = $current.lastLoginTimestamp;
     }
+    $usermapsimple += $row
+    #if ($output -eq 'simpleobject' ) {write-output 
+
 }
 
 if ($output -eq 'json') {
     write-output ($usermap | convertto-json -depth 10)
 } elseif ($output -eq 'object') {
     write-output $usermap
+} elseif ($output -eq 'simpleobject') {
+   Write-Output $usermapsimple
 } elseif ($output -eq 'simplejson') {
     write-output ($usermapsimple | convertto-json -depth 10)
 } elseif ($output -eq 'simplecsv') {
