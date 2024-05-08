@@ -21,3 +21,12 @@ Use default name and descriptoin from manifest but add custom params.
 ```
 Install-SumoApp -uuid deadca25-5fa9-4620-812d-dced60b59ff8 -dataSourceValues @{'Log data source' = '_sourcecategory=*' }
 ```
+
+# install all the default admin apps in a folder in adminrecommended
+
+Assumes _SumoAdmin folder already exists in AdminRecommended and permissions include Manage for current user
+```
+$install_folder_id = (((get-folderContent -type adminRecommended).children) | where  { $_.name -match '_SumoAdmin' }).id
+$adminApps = ($apps | where {  $_.appDefinition.name  -and $_.appManifest.categories -contains 'Sumo Logic'}) 
+$adminApps | foreach { Install-SumoApp -uuid $_.appDefinition.uuid -destinationFolderId $install_folder_id -description $_.appDefinition.name }
+```
