@@ -309,4 +309,21 @@ Describe "sumo-content-apis-tests" {
             (Get-AccountStatus).totalCredits | Should -BeGreaterThan 0
         }
     }
+
+    Context "account" -tag "account" {
+        It "get account subdomain retuns a domain" {
+            (Get-AccountSubdomain).subdomain | Should -Match '[a-zA-Z]+'
+        }
+    }
+
+    Context "account" -tag "account" {
+        It "get usageforecast returns number of days > 0" {
+            (Get-AccountUsageForecast -sumo_session $test -numberOfDays 7).remainingDays | Should -BeGreaterThan 0
+        }
+
+        It "get usageforecast returns number of days > 0 with no number specified" {
+            (Get-AccountUsageForecast -sumo_session $test ).remainingDays | Should -BeGreaterThan 0
+        }
+
+    }
 }

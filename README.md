@@ -126,7 +126,6 @@ missing apis such as:
 - servicewhitelist
 - tokens
 - topology
-- account
 - passwordpolicy
 - dynamicparsing
 - serviceallowlist
