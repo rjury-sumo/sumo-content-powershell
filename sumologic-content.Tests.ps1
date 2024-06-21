@@ -2,8 +2,8 @@
 
 BeforeAll {
 
-    if ($env:SUMO_ACCESS_ID -notmatch '[a-zA-Z1-9]{14}') { write-error "SUMO_ACCESS_ID or KEY is not set"; exit }
-    if ($env:SUMO_ACCESS_KEY -notmatch '[a-zA-Z1-9]{64}') { write-error "SUMO_ACCESS_ID or KEY is not set"; exit }
+    if ($env:SUMO_ACCESS_ID -notmatch '[a-zA-Z0-9]{14}') { write-error "SUMO_ACCESS_ID is not set"; exit }
+    if ($env:SUMO_ACCESS_KEY -notmatch '[a-zA-Z0-9]{64}') { write-error "SUMO_ACCESS_KEY is not set"; exit }
     $endpoint = 'https://api.au.sumologic.com'
     
     foreach ($f in Get-ChildItem ./sumo-content-powershell/*.ps1) { if ($f.name -inotmatch 'build') {. $f.fullname}  }
@@ -295,6 +295,18 @@ Describe "sumo-content-apis-tests" {
 
         It "Get-SloTree returns at least one object" {
             (Get-SloTree ).Count | Should -BeGreaterThan 0
+        }
+    }
+
+    Context "account" -tag "account" {
+        It "get accounts status returns pricingModel" {
+            (Get-AccountStatus).pricingModel | Should -Be 'credits'
+        }
+    }
+
+    Context "account" -tag "account" {
+        It "get accounts status returns numeric credits" {
+            (Get-AccountStatus).totalCredits | Should -BeGreaterThan 0
         }
     }
 }
