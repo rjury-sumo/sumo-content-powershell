@@ -48,6 +48,18 @@ function Get-ContentTree {
     return [Array]$child_items
 }
 
-$content_matching_items =  Get-ContentTree -typeMatches 'Dash' 
+# search starting with personal folder (null default for id)
+#$content_matching_items =  Get-ContentTree -typeMatches 'Dash' 
+# write-output ($content_matching_items | convertto-json -depth 10)
 
-write-output ($content_matching_items | convertto-json -depth 10)
+# all the  dashboards items in admin mode
+[Array]$global_items = @()
+$root = get-folderGlobalContent -type global  
+foreach ($folder in $root) {
+    $global_items += Get-ContentTree -typeMatches 'Dash' -id $folder.id
+}
+
+$admin_recommended = get-folderGlobalContent -type adminRecommended  
+foreach ($folder in $admin_recommended) {
+    $global_items += Get-ContentTree -typeMatches 'Dash' -id $folder.id
+}
