@@ -19,18 +19,21 @@ function Get-ContentTree {
      } else {
         $node = get-Folder -id $id
      }
-      
-     If ($path -eq $null) {
+    
+    # shortcut was corrupting paths due to recursion bug. will fix later
+    # If ($path -eq $null) {
         # root node get a path then infer it
         $path=get-ContentPath -id $node.id 
-     } else {
-        $path = "$path/$($node.name)"
-     }
+    # } else {
+    #    $path = "$path/$($node.name)"
+    # }
 
     Write-Host "Checking Path: $path Node: $($node.id) children: $($node.children.count) name $($node.name)"
 
     if ( $node.children.count -gt 0) {
         foreach ($child in $node.children ) {
+            # there is a recursion bug in this script so using actual path
+            
             # add a custom inferred path so don't need to get item path api every time
             $child | Add-Member -MemberType NoteProperty -Name path -Value "$path/$($child.name)" #get-ContentPath -id
             if (($child.itemType -match $typeMatches) -and ($child.name -match $nameMatches) ){ # 
